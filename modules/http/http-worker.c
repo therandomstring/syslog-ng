@@ -1,6 +1,6 @@
 /*
+ * Copyright (c) 2018-2022 One Identity, Ltd.
  * Copyright (c) 2018 Balazs Scheidler
- * Copyright (c) 2018 One Identity
  * Copyright (c) 2016 Marc Falzon
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -27,6 +27,7 @@
 #include "syslog-names.h"
 #include "scratch-buffers.h"
 #include "http-signals.h"
+#include "http-curl-compression.h"
 
 #define HTTP_HEADER_FORMAT_ERROR http_header_format_error_quark()
 
@@ -162,6 +163,8 @@ _setup_static_options_in_curl(HTTPDestinationWorker *self)
 
   if (owner->method_type == METHOD_TYPE_PUT)
     curl_easy_setopt(self->curl, CURLOPT_CUSTOMREQUEST, "PUT");
+
+  g_assert(curl_easy_setopt(self->curl, CURLOPT_ACCEPT_ENCODING, owner->accept_encoding) == CURLE_OK);
 }
 
 
@@ -512,7 +515,20 @@ _curl_perform_request(HTTPDestinationWorker *self, HTTPLoadBalancerTarget *targe
 
   curl_easy_setopt(self->curl, CURLOPT_URL, target->url);
   curl_easy_setopt(self->curl, CURLOPT_HTTPHEADER, http_curl_header_list_as_slist(self->request_headers));
-  curl_easy_setopt(self->curl, CURLOPT_POSTFIELDS, self->request_body->str);
+  if (owner->message_compression != CURL_COMPRESSION_UNCOMPRESSED)
+  {
+    if(http_dd_compress_string(self->request_body_compressed , self->request_body, owner->message_compression))
+    {
+      curl_easy_setopt(self->curl, CURLOPT_POSTFIELDS, self->request_body_compressed->str);
+      curl_easy_setopt(self->curl, CURLOPT_POSTFIELDSIZE, self->request_body_compressed->len);
+    }
+    else
+    {
+      curl_easy_setopt(self->curl, CURLOPT_POSTFIELDS, self->request_body->str);
+    }
+
+  } else
+    curl_easy_setopt(self->curl, CURLOPT_POSTFIELDS, self->request_body->str);
 
   CURLcode ret = curl_easy_perform(self->curl);
   if (ret != CURLE_OK)
@@ -781,6 +797,7 @@ _deinit(LogThreadedDestWorker *s)
   HTTPDestinationWorker *self = (HTTPDestinationWorker *) s;
 
   g_string_free(self->request_body, TRUE);
+  g_string_free(self->request_body_compressed, TRUE);
   list_free(self->request_headers);
   curl_easy_cleanup(self->curl);
   log_threaded_dest_worker_deinit_method(s);

@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2022 One Identity, Ltd.
  * Copyright (c) 2016 Marc Falzon
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,6 +23,7 @@
 
 #include "http.h"
 #include "http-worker.h"
+#include "http-curl-compression.h"
 
 /* HTTPDestinationDriver */
 void
@@ -259,6 +261,65 @@ http_dd_set_ssl_version(LogDriver *d, const gchar *value)
     return FALSE;
 
   return TRUE;
+}
+
+inline gboolean _http_dd_curl_compression_string_match(const gchar *string, gint curl_compression_index){
+  return (strcmp(string, curl_compression_types[curl_compression_index]) == 0);
+}
+
+//TODO: add grammar checker for encodings
+
+gboolean
+_http_dd_check_curl_compression(const gchar* type){
+  if(_http_dd_curl_compression_string_match(type, CURL_COMPRESSION_UNCOMPRESSED)) return TRUE;
+#if defined(CURL_COMPRESSION_IMPLEMENTED_GZIP) && defined(ZLIB_AVAILABLE)
+  if(_http_dd_curl_compression_string_match(type, CURL_COMPRESSION_GZIP)) return TRUE;
+#endif
+#if defined(CURL_COMPRESSION_IMPLEMENTED_DEFLATE) && defined(ZLIB_AVAILABLE)
+  if(_http_dd_curl_compression_string_match(type, CURL_COMPRESSION_DEFLATE)) return TRUE;
+#endif
+#if defined(CURL_COMPRESSION_IMPLEMENTED_BROTLI) && defined(BROTLI_AVAILABLE)
+  if(_http_dd_curl_compression_string_match(type, CURL_COMPRESSION_BROTLI)) return TRUE;
+#endif
+#if defined(CURL_COMPRESSION_IMPLEMENTED_ZSTD) && defined(ZSTD_AVAILABLE)
+  if(_http_dd_curl_compression_string_match(type, CURL_COMPRESSION_ZSTD)) return TRUE;
+#endif
+  return FALSE;
+}
+
+void
+http_dd_set_accept_encoding(LogDriver *d, const gchar *accept)
+{
+  HTTPDestinationDriver *self = (HTTPDestinationDriver *) d;
+
+  if(strcmp(accept, CURL_COMPRESSION_LITERAL_ALL) == 0) self->accept_encoding = "";
+  else self->accept_encoding = g_strdup(accept);
+}
+
+void
+http_dd_set_message_compression(LogDriver *d, const gchar *encoding)
+{
+  HTTPDestinationDriver *self = (HTTPDestinationDriver *) d;
+
+  gboolean _encoding_valid = FALSE;
+  _encoding_valid = _http_dd_check_curl_compression(encoding);
+  g_assert(_encoding_valid);
+
+  if(_http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_UNCOMPRESSED))
+  {
+    self->message_compression = CURL_COMPRESSION_UNCOMPRESSED;
+    return;
+  }
+  else if(_http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_GZIP))
+    self->message_compression = CURL_COMPRESSION_GZIP;
+  else if(_http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_DEFLATE))
+    self->message_compression = CURL_COMPRESSION_DEFLATE;
+  else if(_http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_BROTLI))
+    self->message_compression = CURL_COMPRESSION_BROTLI;
+  else if(_http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_ZSTD))
+    self->message_compression = CURL_COMPRESSION_ZSTD;
+
+  g_list_append(self->headers,  strcat("Content-Encoding: ", curl_compression_types[self->message_compression]));
 }
 
 void

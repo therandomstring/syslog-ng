@@ -9,6 +9,13 @@ if (NOT Curl_FOUND)
   message(FATAL_ERROR "HTTP module enabled, but libcurl not found")
 endif ()
 
+find_package(ZLIB)
+if(ZLIB_FOUND)
+    add_compile_definitions(ZLIB_AVAILABLE)
+endif()
+#Place find brotli here, set BROTLI_AVAILABLE
+#Place find zstd here, set ZSTD_AVAILABLE
+
 set(HTTP_DESTINATION_SOURCES
     http.h
     http.c
@@ -26,6 +33,8 @@ set(HTTP_DESTINATION_SOURCES
     http-signals.h
     autodetect-ca-location.h
     autodetect-ca-location.c
+    http-curl-compression.h
+    http-curl-compression.c
 )
 
 set(HTTP_MODULE_DEV_HEADERS

@@ -55,6 +55,8 @@ typedef struct
   GString *body_suffix;
   GString *delimiter;
   int ssl_version;
+  gchar *accept_encoding;
+  gint8 message_compression;
   gboolean peer_verify;
   gboolean accept_redirects;
   short int method_type;
@@ -85,6 +87,8 @@ void http_dd_set_cipher_suite(LogDriver *d, const gchar *ciphers);
 gboolean http_dd_set_tls13_cipher_suite(LogDriver *d, const gchar *tls13_ciphers);
 void http_dd_set_proxy(LogDriver *d, const gchar *proxy);
 gboolean http_dd_set_ssl_version(LogDriver *d, const gchar *value);
+void http_dd_set_accept_encoding(LogDriver *d, const gchar *accept);
+void http_dd_set_message_compression(LogDriver *d, const gchar *encoding);
 void http_dd_set_peer_verify(LogDriver *d, gboolean verify);
 void http_dd_set_timeout(LogDriver *d, glong timeout);
 void http_dd_set_batch_bytes(LogDriver *d, glong batch_bytes);

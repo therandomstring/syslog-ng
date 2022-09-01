@@ -64,6 +64,8 @@ static CfgLexerKeyword http_keywords[] =
   { "body_prefix",      KW_BODY_PREFIX },
   { "body_suffix",      KW_BODY_SUFFIX },
   { "delimiter",        KW_DELIMITER },
+  { "accept_encoding",  KW_ACCEPT_ENCODING},
+  { "content_compression",    KW_MESSAGE_COMPRESSION}
   { NULL }
 };
 

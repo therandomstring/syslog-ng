@@ -35,6 +35,7 @@ typedef struct _HTTPDestinationWorker
   HTTPLoadBalancerClient lbc;
   CURL *curl;
   GString *request_body;
+  GString *request_body_compressed;
   List *request_headers;
 } HTTPDestinationWorker;
 
