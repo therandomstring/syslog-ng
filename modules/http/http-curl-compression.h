@@ -1,0 +1,8 @@
+//
+// Created by balinthorvath on 2022.08.29..
+//
+
+#ifndef SYSLOG_NG_HTTP_CURL_COMPRESSION_H
+#define SYSLOG_NG_HTTP_CURL_COMPRESSION_H
+
+#endif //SYSLOG_NG_HTTP_CURL_COMPRESSION_H
