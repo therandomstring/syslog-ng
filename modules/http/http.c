@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2022 One Identity LLC.
  * Copyright (c) 2016 Marc Falzon
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -22,6 +23,7 @@
 
 #include "http.h"
 #include "http-worker.h"
+#include "http-curl-compression.h"
 
 /* HTTPDestinationDriver */
 void
@@ -259,6 +261,37 @@ http_dd_set_ssl_version(LogDriver *d, const gchar *value)
     return FALSE;
 
   return TRUE;
+}
+
+void
+http_dd_set_accept_encoding(LogDriver *d, const gchar *encoding)
+{
+  HTTPDestinationDriver *self = (HTTPDestinationDriver *) d;
+
+  if(strcmp(encoding, CURL_COMPRESSION_LITERAL_ALL) == 0) self->accept_encoding = "";
+  else self->accept_encoding = g_strdup(encoding);
+}
+
+void
+http_dd_set_message_compression(LogDriver *d, const gchar *encoding)
+{
+  HTTPDestinationDriver *self = (HTTPDestinationDriver *) d;
+
+  gboolean _encoding_valid = FALSE;
+  _encoding_valid = http_dd_check_curl_compression(encoding);
+  g_assert(_encoding_valid);
+
+  if(http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_UNCOMPRESSED))
+    {
+      self->message_compression = CURL_COMPRESSION_UNCOMPRESSED;
+      return;
+    }
+  else if(http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_GZIP))
+    self->message_compression = CURL_COMPRESSION_GZIP;
+  else if(http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_DEFLATE))
+    self->message_compression = CURL_COMPRESSION_DEFLATE;
+  gchar *buffer = g_strdup_printf("Content-Encoding: %s", curl_compression_types[self->message_compression]);
+  self->headers= g_list_append(self->headers,  buffer);
 }
 
 void
