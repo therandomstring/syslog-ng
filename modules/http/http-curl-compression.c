@@ -83,16 +83,58 @@ enum _DeflateAlgorithmTypes
 const gchar *_compression_error_message = "Failed due to %s error.";
 static inline void _handle_compression_error(GString *compression_dest, gchar *error_description)
 {
+  msg_error("compression", evt_tag_printf("error", _compression_error_message, error_description));
+  g_string_free(compression_dest, TRUE);
 }
 
 static inline gboolean _raise_compression_status(GString *compression_dest, int algorithm_exit)
 {
-  return FALSE;
+  switch (algorithm_exit)
+    {
+    case _COMPRESSION_OK:
+      return TRUE;
+    case _COMPRESSION_ERR_BUFFER:
+      _handle_compression_error(compression_dest, "buffer");
+      return FALSE;
+    case _COMPRESSION_ERR_MEMORY:
+      _handle_compression_error(compression_dest, "memory");
+      return FALSE;
+    case _COMPRESSION_ERR_STREAM:
+      _handle_compression_error(compression_dest, "stream");
+      return FALSE;
+    case _COMPRESSION_ERR_DATA:
+      _handle_compression_error(compression_dest, "data");
+      return FALSE;
+    case _COMPRESSION_ERR_UNSPECIFIED:
+      _handle_compression_error(compression_dest, "unspecified");
+      return FALSE;
+    default:
+      g_assert_not_reached();
+    }
 }
 
 static inline void _allocate_compression_output_buffer(GString *compression_buffer, guint input_size)
 {
   g_string_set_size(compression_buffer, (guint)(input_size * 1.1) + 22);
+}
+
+_CompressionUnifiedErrorCode _error_code_swap_zlib(int z_err)
+{
+  switch (z_err)
+    {
+    case Z_OK:
+      return _COMPRESSION_OK;
+    case Z_BUF_ERROR:
+      return _COMPRESSION_ERR_BUFFER;
+    case Z_MEM_ERROR:
+      return _COMPRESSION_ERR_MEMORY;
+    case Z_STREAM_ERROR:
+      return _COMPRESSION_ERR_STREAM;
+    case Z_DATA_ERROR:
+      return _COMPRESSION_ERR_DATA;
+    default:
+      return _COMPRESSION_ERR_UNSPECIFIED;
+    }
 }
 
 static inline int _set_deflate_type_wbit(enum _DeflateAlgorithmTypes deflate_algorithm_type)
@@ -108,7 +150,8 @@ static inline int _set_deflate_type_wbit(enum _DeflateAlgorithmTypes deflate_alg
     }
 }
 
-static inline int _z_stream_init(z_stream *compress_stream, GString *compressed, const GString *message)
+static inline _CompressionUnifiedErrorCode _z_stream_init(z_stream *compress_stream, GString *compressed,
+                                                          const GString *message)
 {
   compress_stream->data_type = Z_TEXT;
 
@@ -121,24 +164,24 @@ static inline int _z_stream_init(z_stream *compress_stream, GString *compressed,
   //Check buffer overrun
   if(compress_stream->avail_in != message->len)
     {
-      return Z_BUF_ERROR;
+      return _COMPRESSION_ERR_BUFFER;
     }
   compress_stream->next_out = (guchar *)compressed->str;
   compress_stream->avail_out = compressed->len;
   compress_stream->total_out = compress_stream->avail_out;
   if(compress_stream->avail_out != compressed->len)
     {
-      return Z_BUF_ERROR;
+      return _COMPRESSION_ERR_BUFFER;
     }
-  return Z_OK;
+  return _COMPRESSION_OK;
 }
 
-static inline int _deflate_type_compression_method( GString *destination,
-                                                    z_stream *compress_stream, int wbits)
+static inline _CompressionUnifiedErrorCode _deflate_type_compression_method( GString *destination,
+    z_stream *compress_stream, int wbits)
 {
   int err;
   err = deflateInit2(compress_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, wbits, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
-  if (err != Z_OK && err != Z_STREAM_END) return err;
+  if (err != Z_OK && err != Z_STREAM_END) return _error_code_swap_zlib(err);
   err = Z_OK;
   while(TRUE)
     {
@@ -153,18 +196,18 @@ static inline int _deflate_type_compression_method( GString *destination,
           break;
         }
     }
-  return err;
+  return _error_code_swap_zlib(err);
 }
 
-int _deflate_type_compression(GString *compressed, const GString *message,
-                              const gint deflate_algorithm_type)
+_CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, const GString *message,
+                                                       const gint deflate_algorithm_type)
 {
   z_stream _compress_stream = {0};
   gint err;
 
   err = _z_stream_init(&_compress_stream, compressed, message);
-  if (err != Z_OK)
-    return err;
+  if (err != _COMPRESSION_OK)
+    return _error_code_swap_zlib(err);
 
   gint _wbits = _set_deflate_type_wbit(deflate_algorithm_type);
 
@@ -173,7 +216,7 @@ int _deflate_type_compression(GString *compressed, const GString *message,
 
 gboolean _gzip_compressor_compress(Compressor *self, GString *compressed, const GString *message)
 {
-  int err = _deflate_type_compression(compressed, message, DEFLATE_TYPE_GZIP);
+  _CompressionUnifiedErrorCode err = _deflate_type_compression(compressed, message, DEFLATE_TYPE_GZIP);
   return _raise_compression_status(compressed, err);
 }
 
@@ -187,7 +230,7 @@ Compressor *gzip_compressor_new(void)
 
 gboolean _deflate_compressor_compress(Compressor *self, GString *compressed, const GString *message)
 {
-  int err = _deflate_type_compression(compressed, message, DEFLATE_TYPE_DEFLATE);
+  _CompressionUnifiedErrorCode err = _deflate_type_compression(compressed, message, DEFLATE_TYPE_DEFLATE);
   return _raise_compression_status(compressed, err);
 }
 

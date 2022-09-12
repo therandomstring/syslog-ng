@@ -41,6 +41,16 @@ extern gchar *curl_compression_types[];
 gboolean http_dd_curl_compression_string_match(const gchar *string, gint curl_compression_index);
 gboolean http_dd_check_curl_compression(const gchar *type);
 
+typedef enum
+{
+  _COMPRESSION_OK,
+  _COMPRESSION_ERR_BUFFER,
+  _COMPRESSION_ERR_DATA,
+  _COMPRESSION_ERR_STREAM,
+  _COMPRESSION_ERR_MEMORY,
+  _COMPRESSION_ERR_UNSPECIFIED
+} _CompressionUnifiedErrorCode;
+
 typedef struct Compressor Compressor;
 struct Compressor
 {
