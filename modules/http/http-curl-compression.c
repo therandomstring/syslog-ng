@@ -21,10 +21,18 @@
  *
  */
 
+#define _COMPRESSION_OK 0
+#define _COMPRESSION_ERR_BUFFER 1
+#define _COMPRESSION_ERR_DATA 2
+#define _COMPRESSION_ERR_STREAM 3
+#define _COMPRESSION_ERR_MEMORY 4
+#define _COMPRESSION_ERR_UNSPECIFIED 255
+
 #define _DEFLATE_WBITS_DEFLATE MAX_WBITS
 #define _DEFLATE_WBITS_GZIP MAX_WBITS + 16
 
 #include "http-curl-compression.h"
+#include "messages.h"
 #include <zlib.h>
 
 gint8 CURL_COMPRESSION_TYPES_LEN = 3;
@@ -59,15 +67,57 @@ gboolean http_dd_check_curl_compression(const gchar *type)
 gchar *_compression_error_message = "Failed due to %s error.";
 static inline void _handle_compression_error(GString *compression_dest, gchar *error_description)
 {
+  msg_error("compression", evt_tag_printf("error", _compression_error_message, error_description));
+  g_string_free(compression_dest, TRUE);
 }
 static inline gboolean _raise_compression_status(GString *compression_dest, int algorithm_exit)
 {
-  return FALSE;
+  switch (algorithm_exit)
+    {
+    case _COMPRESSION_OK:
+      return TRUE;
+    case _COMPRESSION_ERR_BUFFER:
+      _handle_compression_error(compression_dest, "buffer");
+      return FALSE;
+    case _COMPRESSION_ERR_MEMORY:
+      _handle_compression_error(compression_dest, "memory");
+      return FALSE;
+    case _COMPRESSION_ERR_STREAM:
+      _handle_compression_error(compression_dest, "stream");
+      return FALSE;
+    case _COMPRESSION_ERR_DATA:
+      _handle_compression_error(compression_dest, "data");
+      return FALSE;
+    case _COMPRESSION_ERR_UNSPECIFIED:
+      _handle_compression_error(compression_dest, "unspecified");
+      return FALSE;
+    default:
+      g_assert_not_reached();
+    }
 }
 
 void _allocate_compression_output_buffer(GString *compression_buffer, guint input_size)
 {
   g_string_set_size(compression_buffer, (guint)(input_size * 1.1) + 22);
+}
+
+int _error_code_swap_zlib(int z_err)
+{
+  switch (z_err)
+    {
+    case Z_OK:
+      return _COMPRESSION_OK;
+    case Z_BUF_ERROR:
+      return _COMPRESSION_ERR_BUFFER;
+    case Z_MEM_ERROR:
+      return _COMPRESSION_ERR_MEMORY;
+    case Z_STREAM_ERROR:
+      return _COMPRESSION_ERR_STREAM;
+    case Z_DATA_ERROR:
+      return _COMPRESSION_ERR_DATA;
+    default:
+      return _COMPRESSION_ERR_UNSPECIFIED;
+    }
 }
 
 int _gzip_string(GString *compressed, const GString *message);
@@ -119,14 +169,14 @@ int _deflate_type_compression(GString *compressed, const GString *message, const
   //Check buffer overrun
   if(_compress_stream.avail_in != message->len)
     {
-      return Z_BUF_ERROR;
+      return _COMPRESSION_ERR_BUFFER;
     }
   _compress_stream.next_out = (guchar *)compressed->str;
   _compress_stream.avail_out = compressed->len;
   _compress_stream.total_out = _compress_stream.avail_out;
   if(_compress_stream.avail_out != compressed->len)
     {
-      return Z_BUF_ERROR;
+      return _COMPRESSION_ERR_BUFFER;
     }
 
   gint _wbits;
@@ -143,7 +193,7 @@ int _deflate_type_compression(GString *compressed, const GString *message, const
     }
 
   err = deflateInit2(&_compress_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, _wbits, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
-  if (err != Z_OK && err != Z_STREAM_END) return err;
+  if (err != Z_OK && err != Z_STREAM_END) return _error_code_swap_zlib(err);
   err = Z_OK;
   while(TRUE)
     {
@@ -158,6 +208,5 @@ int _deflate_type_compression(GString *compressed, const GString *message, const
           break;
         }
     }
-
-  return err;
+  return _error_code_swap_zlib(err);
 }
