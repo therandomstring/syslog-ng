@@ -21,6 +21,9 @@
  *
  */
 
+#define _DEFLATE_WBITS_DEFLATE MAX_WBITS
+#define _DEFLATE_WBITS_GZIP MAX_WBITS + 16
+
 #include "http-curl-compression.h"
 #include <zlib.h>
 
@@ -62,6 +65,11 @@ static inline gboolean _raise_compression_status(GString *compression_dest, int 
   return FALSE;
 }
 
+void _allocate_compression_output_buffer(GString *compression_buffer, guint input_size)
+{
+  g_string_set_size(compression_buffer, (guint)(input_size * 1.1) + 22);
+}
+
 int _gzip_string(GString *compressed, const GString *message);
 int _deflate_string(GString *compressed, const GString *message);
 
@@ -94,8 +102,62 @@ int _deflate_string(GString *compressed, const GString *message)
   return _deflate_type_compression(compressed, message, DEFLATE_TYPE_DEFLATE);
 }
 
+
 int _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type)
 {
-  //not yet implemented
-  g_assert_not_reached();
+  z_stream _compress_stream = {0};
+  gint err;
+
+  _compress_stream.data_type = Z_TEXT;
+
+  _compress_stream.next_in = (guchar *)message->str;
+  _compress_stream.avail_in = message->len;
+  _compress_stream.total_in = _compress_stream.avail_in;
+
+  _allocate_compression_output_buffer(compressed, _compress_stream.avail_in);
+
+  //Check buffer overrun
+  if(_compress_stream.avail_in != message->len)
+    {
+      return Z_BUF_ERROR;
+    }
+  _compress_stream.next_out = (guchar *)compressed->str;
+  _compress_stream.avail_out = compressed->len;
+  _compress_stream.total_out = _compress_stream.avail_out;
+  if(_compress_stream.avail_out != compressed->len)
+    {
+      return Z_BUF_ERROR;
+    }
+
+  gint _wbits;
+  switch (deflate_algorithm_type)
+    {
+    case DEFLATE_TYPE_DEFLATE:
+      _wbits = _DEFLATE_WBITS_DEFLATE;
+      break;
+    case DEFLATE_TYPE_GZIP:
+      _wbits = _DEFLATE_WBITS_GZIP;
+      break;
+    default:
+      g_assert_not_reached();
+    }
+
+  err = deflateInit2(&_compress_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, _wbits, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+  if (err != Z_OK && err != Z_STREAM_END) return err;
+  err = Z_OK;
+  while(TRUE)
+    {
+      err = deflate(&_compress_stream, Z_FINISH);
+      if (err != Z_OK && err != Z_STREAM_END)
+        break;
+      if (err == Z_STREAM_END)
+        {
+          err = Z_OK;
+          deflateEnd(&_compress_stream);
+          g_string_set_size(compressed, compressed->len - _compress_stream.avail_out);
+          break;
+        }
+    }
+
+  return err;
 }
