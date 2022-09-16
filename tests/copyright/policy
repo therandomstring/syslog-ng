@@ -139,6 +139,7 @@ modules/python-modules/syslogng/persist\.py
 # These files are GPLd and non-balabit contributions.
 ###########################################################################
                                                  GPLv2+_SSL,non-balabit
+
 modules/http/http-plugin\.[ch]
 modules/http/http-parser.h
 modules/timestamp/rewrite-.*$
