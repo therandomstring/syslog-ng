@@ -33,9 +33,11 @@ LibFuzzer well integrated with Clang from version 6.0, and is shipped as part of
 
 Since LibFuzzer is part of Clang, if you want to fuzz syslog-ng, you will need to compile it with Clang. We try to use a fresh version, and so should you.
 
+Fuzzing with Clang requires `clang` and `llvm` development packages. These might change distribution to distribution. Check with your distributor to inquire about package names.
+
 ## How to fuzz syslog-ng
 
-The LibFuzzer library used by our fuzzing framework needs test to run. These test consist of two parts: test code and sample inputs. The code part is called a test target, and a sample input is called a corpus.
+The LibFuzzer library used by our fuzzing framework needs tests to run. These tests consist of two parts: test code and sample inputs. The code part is called a test target, and a sample input is called a corpus.
 
 Please put each test in its own subdirectory in this folder. You can look at the example test to get an idea of the structure.
 
@@ -59,7 +61,7 @@ extern "C" int LLVMFuzzerTestOneInput( [args] )
 
 if by any chance you are using C++. Since syslog-ng is written in C, the latter is not recommended.
 
-Please put each target in its own `.c` source file. Try to write simple test to maximize LibFuzzer's performance.
+Please put each target in its own `.c` source file. Try to write simple tests to maximize LibFuzzer's performance.
 
 ### Corpora
 
@@ -67,7 +69,7 @@ The sample input used by mutational fuzzers is called a corpus (pl. corpuses or 
 
 The reason for this is twofold:
  * A random input will most likely will be dropped quickly by the program, so it is much more efficient not to test inputs not adhering to the correct input syntax.
- * You can avoid inputs, which would likely break the tested code path, but which are already filtered by another function before calling the tested one. In the latter case you should also check the other function to make sure it behaves as intended,
+ * You can avoid inputs, which would likely break the tested code path, but which are already filtered by another function before calling the tested one. In the latter case you should also check the other function to make sure it behaves as intended.
 
 <!-- TODO write tutorial on writing corpora. -->
 
