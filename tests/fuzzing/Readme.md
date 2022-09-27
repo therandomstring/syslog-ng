@@ -39,7 +39,29 @@ Fuzzing with Clang requires `clang` and `llvm` development packages. These might
 
 The LibFuzzer library used by our fuzzing framework needs tests to run. These tests consist of two parts: test code and sample inputs. The code part is called a test target, and a sample input is called a corpus.
 
-Please put each test in its own subdirectory in this folder. You can look at the example test to get an idea of the structure.
+Please put each test in its own subdirectory in this folder. You can look at the example test to get an idea of how a test should look like, but the structure should be like this:
+
+```
+/.../syslog-ng
+   - tests
+      - fuzzing
+         - tests
+            - [your_test_folder_here]
+               - corpora
+                  - [your_corpus_1].txt
+                  - [your_corpus_2].txt
+                  - ...
+               - targets
+                  - [your_target_1].c
+                  - [your_target_2].c
+                  - ...
+               - CMakeLists.txt (you have to write this)
+               - Makefile.am (you have to write this)
+            - CMakeLists.txt (add your folder)
+            - Makefile.am (add your folder)
+```
+
+In addition to the corpora and fuzz targets, you also have to specify your CMake or automake target (either or both). You must also add your folder to the test level CMake or automake makefile (depending on your build environment). 
 
 ### Fuzz targets
 
@@ -75,9 +97,19 @@ The reason for this is twofold:
 
 ### Building with CMake
 
-You should add your `CMakeLists.txt` file to your test directory (on the same level as your `targets` and `corpora` folder). You should also add your module to `tests/fuzzing/CMakeLists.txt`.
+You should add your `CMakeLists.txt` file to your test directory (on the same level as your `targets` and `corpora` folder). You should also add your module to `tests/fuzzing/tests/CMakeLists.txt`.
 
-<!-- TODO how to write a fuzzing target. -->
+The minimum required `CMakeLists.txt` should contain at least an executable build target, for which you most configure build flags and linker libraries using the provided `configure_fuzz_target_flags()` and `configure_fuzz_target_libs()` functions.
+
+Here is an example:
+
+```cmake
+add_executable(example targets/target.c)
+configure_fuzz_target_flags(example)
+configure_fuzz_target_libs(example "lib1 lib2 lib3")
+```
+
+You must also append your folder to `tests/fuzzing/tests/CMakeLists.txt` with the `add_subdirectory()` function.
 
 ### Building with automake
 
