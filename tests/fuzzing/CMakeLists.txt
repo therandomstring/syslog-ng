@@ -1,6 +1,19 @@
-find_package(Clang)
+#BEGIN FUNCTIONS
 
-module_switch(ENABLE_FUZZING "Enable fuzz testing" Clang_FOUND)
+#function(configure_fuzz_target_flags TARGET)
+#    set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-O0, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
+#    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-O0, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
+#endfunction()
+
+#function(configure_fuzz_target_libs TARGET LIBRARIES)
+#    target_link_libraries(${TARGET} PRIVATE syslog-ng ${LIBRARIES})
+#endfunction()
+
+#END FUNCTIONS
+
+add_subdirectory(tests)
+
+module_switch(ENABLE_FUZZING "Enable fuzz testing")
 if(NOT ENABLE_FUZZING)
     return()
 endif()
@@ -15,13 +28,4 @@ if(NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
     return()
 endif()
 
-add_subdirectory(example-test)
-
-#function(configure_fuzz_target_flags TARGET)
-#      set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-O0, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
-#      set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-O0, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
-#endfunction()
-
-#function(configure_fuzz_target_libs TARGET LIBRARIES)
-#    target_link_libraries(${TARGET} PRIVATE syslog-ng ${LIBRARIES})
-#endfunction()
+add_dependencies(Clang)
