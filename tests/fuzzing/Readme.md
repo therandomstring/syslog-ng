@@ -99,15 +99,19 @@ The reason for this is twofold:
 
 You should add your `CMakeLists.txt` file to your test directory (on the same level as your `targets` and `corpora` folder). You should also add your module to `tests/fuzzing/tests/CMakeLists.txt`.
 
-The minimum required `CMakeLists.txt` should contain at least an executable build target, for which you most configure build flags and linker libraries using the provided `configure_fuzz_target_flags()` and `configure_fuzz_target_libs()` functions.
+The minimum required `CMakeLists.txt` should contain at least a test target. To add this target, use the provided `add_fuzz_test()` function. Do not use CMake's integrated `add_executable()` or `add_custom_target()` functions unless you are completely sure in what you are doing, as these do not set the variables and command arguments used by CTest.
 
 Here is an example:
 
 ```cmake
-add_executable(example targets/target.c)
-configure_fuzz_target_flags(example)
-configure_fuzz_target_libs(example "lib1 lib2 lib3")
+add_fuzz_target(TARGET example SRC targets/target_1.c LIBS lib1 lib2 lib3 CORPUS_DIR corpora/target_1 EXEC_PARMS -merge=1 -only-ascii)
 ```
+
+The only required argument is `TARGET`. If you do not provide other arguments, the function will try to apply default values. These are:
+ * `SRC`: `targets/${TARGET}.c`
+ * `LIBS`: empty
+ * `CORPUS_DIR`: `corpora`
+ * `EXEC_PARMS`: `-print_pcs -print_final_stats`
 
 You must also append your folder to `tests/fuzzing/tests/CMakeLists.txt` with the `add_subdirectory()` function.
 

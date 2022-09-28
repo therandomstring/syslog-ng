@@ -71,3 +71,40 @@ macro (add_test_subdirectory SUBDIR)
     add_subdirectory(${SUBDIR})
   endif()
 endmacro()
+
+function (add_fuzz_test)
+
+  if(NOT ENABLE_FUZZING)
+      return()
+  endif()
+  if(BUILD_TESTING)
+    message(WARNING "\
+!!!BUILD_TESTING defined!!!
+It is strongly recommended not to run unit tests while fuzzing.\
+Fuzz test should ideally run for a longer duration, which may conflict with your unit test environment.\
+Also, fuzzing need not be done as often as unit testing.\
+    ")
+  endif()
+
+  cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET" "SRC;LIBS;CORPUS_DIR;EXEC_PARMS" ${ARGN})
+
+  if(NOT ADD_FUZZ_TEST_SRC)
+    message(NOTICE "No source file was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying testing/${ADD_FUZZ_TEST_TARGET}.c")
+    set(ADD_FUZZ_TEST_SRC tests/${ADD_FUZZ_TEST_TARGET}.c)
+  endif()
+  if(NOT ADD_FUZZ_TEST_CORPUS_DIR)
+    message(NOTICE "No corpus directory was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying corpora/")
+    set(ADD_FUZZ_TEST_CORPUS_DIR corpora)
+  endif()
+
+  add_executable(${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_SRC})
+  #configure flags
+  set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES COMPILE_FLAGS "-O1 -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
+  set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES LINK_FLAGS "-O1, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
+  #configure libraries
+  target_link_libraries(${ADD_FUZZ_TEST_TARGET} PRIVATE syslog-ng ${ADD_FUZZ_TEST_TARGET_LIBS})
+
+  #TODO: add experimental feature option, such as `-print_final_stats`
+
+  add_test(${ADD_FUZZ_TEST_TARGET}  ${ADD_FUZZ_TEST_TARGET} "${ADD_FUZZ_TEST_CORPUS_DIR} ${ADD_FUZZ_TEST_EXEC_PARM}" )
+endfunction()

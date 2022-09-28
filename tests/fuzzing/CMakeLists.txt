@@ -1,18 +1,3 @@
-#BEGIN FUNCTIONS
-
-function(configure_fuzz_target_flags TARGET)
-    cmake_parse_arguments(FUZZ "" "TARGET" "")
-    set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS "-O1 -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
-    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-O1, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
-endfunction()
-
-function(configure_fuzz_target_libs TARGET LIBRARIES)
-    cmake_parse_arguments(FUZZ "" "TARGET" "LIBRARIES")
-    target_link_libraries(${TARGET} PRIVATE syslog-ng ${LIBRARIES})
-endfunction()
-
-#END FUNCTIONS
-
 option(ENABLE_FUZZING "Enable fuzz testing" "OFF")
 if(NOT ENABLE_FUZZING)
     return()
