@@ -120,6 +120,7 @@ modules/java-modules/common
 modules/java/(native|proxies|src)
 modules/native
 modules/http/http-signals.h
+modules/http/http-curl-compression\.[ch]
 tests/loggen
 persist-tool
 
@@ -128,9 +129,8 @@ persist-tool
 # These files are GPLd and non-balabit contributions.
 ###########################################################################
                                                  GPLv2+_SSL,non-balabit
-
-modules/http/(http|http-parser|http-plugin|)\.[ch]
-modules/http/http-grammar.ym
+modules/http/http-plugin\.[ch]
+modules/http/http-parser.h
 modules/timestamp/rewrite-.*$
 modules/add-contextual-data/add-contextual-data-glob-selector\.[ch]$
 modules/add-contextual-data/tests/test_glob_selector\.c$
@@ -173,3 +173,6 @@ packaging/package-indexer/.*\.py$
 scl
 scripts
 modules/http/tests
+modules/http/http\.[ch]
+modules/http/http-parser.c
+modules/http/http-grammar.ym
