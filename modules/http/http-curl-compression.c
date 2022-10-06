@@ -44,10 +44,10 @@ gboolean http_dd_curl_compression_string_match(const gchar *string, gint curl_co
 gboolean http_dd_check_curl_compression(const gchar *type)
 {
   if(http_dd_curl_compression_string_match(type, CURL_COMPRESSION_UNCOMPRESSED)) return TRUE;
-#ifdef ZLIB_AVAILABLE
+#ifdef SYSLOG_NG_HAVE_ZLIB
   if(http_dd_curl_compression_string_match(type, CURL_COMPRESSION_GZIP)) return TRUE;
 #endif
-#ifdef ZLIB_AVAILABLE
+#ifdef SYSLOG_NG_HAVE_ZLIB
   if(http_dd_curl_compression_string_match(type, CURL_COMPRESSION_DEFLATE)) return TRUE;
 #endif
   return FALSE;
