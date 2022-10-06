@@ -152,6 +152,18 @@ int _deflate_string(GString *compressed, const GString *message)
   return _deflate_type_compression(compressed, message, DEFLATE_TYPE_DEFLATE);
 }
 
+int _set_deflate_type_wbit(enum _DeflateAlgorithmTypes deflate_algorithm_type)
+{
+  switch (deflate_algorithm_type)
+    {
+    case DEFLATE_TYPE_DEFLATE:
+      return _DEFLATE_WBITS_DEFLATE;
+    case DEFLATE_TYPE_GZIP:
+      return _DEFLATE_WBITS_GZIP;
+    default:
+      g_assert_not_reached();
+    }
+}
 
 int _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type)
 {
@@ -179,18 +191,7 @@ int _deflate_type_compression(GString *compressed, const GString *message, const
       return _COMPRESSION_ERR_BUFFER;
     }
 
-  gint _wbits;
-  switch (deflate_algorithm_type)
-    {
-    case DEFLATE_TYPE_DEFLATE:
-      _wbits = _DEFLATE_WBITS_DEFLATE;
-      break;
-    case DEFLATE_TYPE_GZIP:
-      _wbits = _DEFLATE_WBITS_GZIP;
-      break;
-    default:
-      g_assert_not_reached();
-    }
+  gint _wbits = _set_deflate_type_wbit(deflate_algorithm_type);
 
   err = deflateInit2(&_compress_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, _wbits, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
   if (err != Z_OK && err != Z_STREAM_END) return _error_code_swap_zlib(err);
