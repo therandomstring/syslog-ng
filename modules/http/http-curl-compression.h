@@ -42,10 +42,30 @@ gboolean http_dd_compress_string(GString *compression_destination, const GString
 gboolean http_dd_curl_compression_string_match(const gchar *string, gint curl_compression_index);
 gboolean http_dd_check_curl_compression(const gchar *type);
 
+typedef enum
+{
+  _COMPRESSION_OK,
+  _COMPRESSION_ERR_BUFFER,
+  _COMPRESSION_ERR_DATA,
+  _COMPRESSION_ERR_STREAM,
+  _COMPRESSION_ERR_MEMORY,
+  _COMPRESSION_ERR_UNSPECIFIED
+} _CompressionUnifiedErrorCode;
+
 typedef struct Compressor Compressor;
+struct Compressor
+{
+  GString *_compressed_return;
+  const GString *_message;
+  void (*set_compression_strings) (Compressor*, GString*, const GString*);
+  _CompressionUnifiedErrorCode (*_compression_algorithm) (GString*, const GString*);
+  gboolean (*compress) (Compressor*);
+};
 
-Compressor get_gzip_compressor(void);
+Compressor *compressor_new_gzip(void);
 
-Compressor get_deflate_compressor(void);
+Compressor *compressor_new_deflate(void);
+
+void compressor_free(Compressor* compressor);
 
 #endif //SYSLOG_NG_HTTP_CURL_COMPRESSION_H

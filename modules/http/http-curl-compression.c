@@ -37,26 +37,7 @@ enum _DeflateAlgorithmTypes
 {
   DEFLATE_TYPE_DEFLATE,
   DEFLATE_TYPE_GZIP
-
 };
-
-typedef enum{
-  _COMPRESSION_OK,
-  _COMPRESSION_ERR_BUFFER,
-  _COMPRESSION_ERR_DATA,
-  _COMPRESSION_ERR_STREAM,
-  _COMPRESSION_ERR_MEMORY,
-  _COMPRESSION_ERR_UNSPECIFIED
-} _CompressionUnifiedErrorCode;
-
-struct Compressor{
-    gboolean compression_success;
-    GString *_compressed_return;
-    const GString *_message;
-    void (*set_compression_strings) (Compressor*, GString*, const GString*);
-    _CompressionUnifiedErrorCode (*_compression_algorithm) (GString*, const GString*);
-    void (*compress) (Compressor*);
-  };
 
 gboolean http_dd_curl_compression_string_match(const gchar *string, gint curl_compression_index)
 {
@@ -203,10 +184,10 @@ _CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, cons
   return _error_code_swap_zlib(err);
 }
 
-void _compression_wrapper(Compressor *self)
+gboolean _compression_wrapper(Compressor *self)
 {
     _CompressionUnifiedErrorCode err_compr = self->_compression_algorithm(self->_compressed_return, self->_message);
-    self->compression_success = _raise_compression_status(self->_compressed_return, err_compr);
+    return _raise_compression_status(self->_compressed_return, err_compr);
 }
 
 void _set_compressor_io(Compressor *self, GString *compression_destination, const GString *message)
@@ -217,23 +198,27 @@ void _set_compressor_io(Compressor *self, GString *compression_destination, cons
 
 void _compressor_init(Compressor *self)
 {
-  self->compression_success = FALSE;
   self->compress = _compression_wrapper;
   self->set_compression_strings = _set_compressor_io;
 }
 
-Compressor get_gzip_compressor(void)
+Compressor *compressor_new_gzip(void)
 {
-  Compressor rval;
-  _compressor_init(&rval);
-  rval._compression_algorithm = _gzip_string;
+  Compressor *rval = g_malloc(sizeof (struct Compressor));
+  _compressor_init(rval);
+  rval->_compression_algorithm = _gzip_string;
   return rval;
 };
 
-Compressor get_deflate_compressor(void)
+Compressor *compressor_new_deflate(void)
 {
-  Compressor rval;
-  _compressor_init(&rval);
-  rval._compression_algorithm = _gzip_string;
+  Compressor *rval = g_malloc(sizeof (struct Compressor));
+  _compressor_init(rval);
+  rval->_compression_algorithm = _gzip_string;
   return rval;
 };
+
+void compressor_free(Compressor* compressor)
+{
+  g_free(compressor);
+}
