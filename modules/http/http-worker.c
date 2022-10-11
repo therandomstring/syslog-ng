@@ -27,7 +27,6 @@
 #include "syslog-names.h"
 #include "scratch-buffers.h"
 #include "http-signals.h"
-#include "http-curl-compression.h"
 
 #define HTTP_HEADER_FORMAT_ERROR http_header_format_error_quark()
 
@@ -517,7 +516,7 @@ _curl_perform_request(HTTPDestinationWorker *self, HTTPLoadBalancerTarget *targe
   curl_easy_setopt(self->curl, CURLOPT_HTTPHEADER, http_curl_header_list_as_slist(self->request_headers));
   if (owner->message_compression != CURL_COMPRESSION_UNCOMPRESSED)
     {
-      if(http_dd_compress_string(self->request_body_compressed, self->request_body, owner->message_compression))
+      if(self->compressor->compress(self->compressor))
         {
           curl_easy_setopt(self->curl, CURLOPT_POSTFIELDS, self->request_body_compressed->str);
           curl_easy_setopt(self->curl, CURLOPT_POSTFIELDSIZE, self->request_body_compressed->len);
@@ -781,6 +780,18 @@ _init(LogThreadedDestWorker *s)
   if (owner->message_compression != CURL_COMPRESSION_UNCOMPRESSED)
     {
       self->request_body_compressed = g_string_sized_new(32768);
+      switch (owner->message_compression)
+        {
+          case CURL_COMPRESSION_GZIP:
+            self->compressor = compressor_new_gzip();
+            break;
+          case CURL_COMPRESSION_DEFLATE:
+            self->compressor = compressor_new_deflate();
+            break;
+          default:
+            g_assert_not_reached();
+        }
+      self->compressor->set_compression_strings(self->compressor, self->request_body_compressed, self->request_body);
     }
   self->request_headers = http_curl_header_list_new();
   if (!(self->curl = curl_easy_init()))
@@ -804,6 +815,7 @@ _deinit(LogThreadedDestWorker *s)
 
   g_string_free(self->request_body, TRUE);
   g_string_free(self->request_body_compressed, TRUE);
+  compressor_free(self->compressor);
   list_free(self->request_headers);
   curl_easy_cleanup(self->curl);
   log_threaded_dest_worker_deinit_method(s);
