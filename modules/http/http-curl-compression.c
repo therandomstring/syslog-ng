@@ -21,13 +21,6 @@
  *
  */
 
-#define _COMPRESSION_OK 0
-#define _COMPRESSION_ERR_BUFFER 1
-#define _COMPRESSION_ERR_DATA 2
-#define _COMPRESSION_ERR_STREAM 3
-#define _COMPRESSION_ERR_MEMORY 4
-#define _COMPRESSION_ERR_UNSPECIFIED 255
-
 #define _DEFLATE_WBITS_DEFLATE MAX_WBITS
 #define _DEFLATE_WBITS_GZIP MAX_WBITS + 16
 
@@ -46,6 +39,15 @@ enum _DeflateAlgorithmTypes
   DEFLATE_TYPE_GZIP
 
 };
+
+typedef enum{
+  _COMPRESSION_OK,
+  _COMPRESSION_ERR_BUFFER,
+  _COMPRESSION_ERR_DATA,
+  _COMPRESSION_ERR_STREAM,
+  _COMPRESSION_ERR_MEMORY,
+  _COMPRESSION_ERR_UNSPECIFIED
+} _CompressionUnifiedErrorCode;
 
 gboolean http_dd_curl_compression_string_match(const gchar *string, gint curl_compression_index)
 {
@@ -70,7 +72,7 @@ static inline void _handle_compression_error(GString *compression_dest, gchar *e
   msg_error("compression", evt_tag_printf("error", _compression_error_message, error_description));
   g_string_free(compression_dest, TRUE);
 }
-static inline gboolean _raise_compression_status(GString *compression_dest, int algorithm_exit)
+static inline gboolean _raise_compression_status(GString *compression_dest, _CompressionUnifiedErrorCode algorithm_exit)
 {
   switch (algorithm_exit)
     {
@@ -101,7 +103,7 @@ void _allocate_compression_output_buffer(GString *compression_buffer, guint inpu
   g_string_set_size(compression_buffer, (guint)(input_size * 1.1) + 22);
 }
 
-int _error_code_swap_zlib(int z_err)
+_CompressionUnifiedErrorCode _error_code_swap_zlib(int z_err)
 {
   switch (z_err)
     {
@@ -120,14 +122,14 @@ int _error_code_swap_zlib(int z_err)
     }
 }
 
-int _gzip_string(GString *compressed, const GString *message);
-int _deflate_string(GString *compressed, const GString *message);
+_CompressionUnifiedErrorCode _gzip_string(GString *compressed, const GString *message);
+_CompressionUnifiedErrorCode _deflate_string(GString *compressed, const GString *message);
 
-int _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type);
+_CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type);
 
 gboolean http_dd_compress_string(GString *compression_destination, const GString *message, const gint compression)
 {
-  int err_compr;
+  _CompressionUnifiedErrorCode err_compr;
   switch (compression)
     {
     case CURL_COMPRESSION_GZIP:
@@ -142,12 +144,12 @@ gboolean http_dd_compress_string(GString *compression_destination, const GString
   return _raise_compression_status(compression_destination, err_compr);
 }
 
-int _gzip_string(GString *compressed, const GString *message)
+_CompressionUnifiedErrorCode _gzip_string(GString *compressed, const GString *message)
 {
   return _deflate_type_compression(compressed, message, DEFLATE_TYPE_GZIP);
 }
 
-int _deflate_string(GString *compressed, const GString *message)
+_CompressionUnifiedErrorCode _deflate_string(GString *compressed, const GString *message)
 {
   return _deflate_type_compression(compressed, message, DEFLATE_TYPE_DEFLATE);
 }
@@ -165,7 +167,7 @@ int _set_deflate_type_wbit(enum _DeflateAlgorithmTypes deflate_algorithm_type)
     }
 }
 
-int _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type)
+_CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type)
 {
   z_stream _compress_stream = {0};
   gint err;
