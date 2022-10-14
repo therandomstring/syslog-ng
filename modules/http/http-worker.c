@@ -783,10 +783,10 @@ _init(LogThreadedDestWorker *s)
       switch (owner->message_compression)
         {
           case CURL_COMPRESSION_GZIP:
-            self->compressor = compressor_new_gzip();
+            self->compressor = (Compressor *) GzipCompressor_new();
             break;
           case CURL_COMPRESSION_DEFLATE:
-            self->compressor = compressor_new_deflate();
+            self->compressor = (Compressor *) DeflateCompressor_new();
             break;
           default:
             g_assert_not_reached();
@@ -815,7 +815,7 @@ _deinit(LogThreadedDestWorker *s)
 
   g_string_free(self->request_body, TRUE);
   g_string_free(self->request_body_compressed, TRUE);
-  compressor_free(self->compressor);
+  Compressor_free(self->compressor);
   list_free(self->request_headers);
   curl_easy_cleanup(self->curl);
   log_threaded_dest_worker_deinit_method(s);
