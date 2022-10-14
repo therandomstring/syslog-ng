@@ -202,23 +202,52 @@ void _compressor_init(Compressor *self)
   self->set_compression_strings = _set_compressor_io;
 }
 
-Compressor *compressor_new_gzip(void)
+void _compressor_set_algorithm(Compressor *compressor, _CompressionUnifiedErrorCode (*algorithm) (GString*, const GString*))
 {
-  Compressor *rval = g_malloc(sizeof (struct Compressor));
-  _compressor_init(rval);
-  rval->_compression_algorithm = _gzip_string;
-  return rval;
-};
+  compressor->_compression_algorithm = algorithm;
+}
 
-Compressor *compressor_new_deflate(void)
-{
-  Compressor *rval = g_malloc(sizeof (struct Compressor));
-  _compressor_init(rval);
-  rval->_compression_algorithm = _gzip_string;
-  return rval;
-};
-
-void compressor_free(Compressor* compressor)
+void Compressor_free(Compressor* compressor)
 {
   g_free(compressor);
+}
+
+void _stream_capable_compressor_init(StreamCapableCompressor *compressor)
+{
+  compressor->set_source_stream = NULL;
+  compressor->compress_stream = NULL;
+  compressor->end_compress_stream = NULL;
+}
+
+void StreamCapableCompressor_free(StreamCapableCompressor *compressor)
+{
+  Compressor_free(compressor->super);
+}
+
+GzipCompressor *GzipCompressor_new(void)
+{
+  GzipCompressor *rval = g_malloc(sizeof (struct GzipCompressor));
+  _compressor_init(rval->super->super);
+  _stream_capable_compressor_init(rval->super);
+  _compressor_set_algorithm(rval->super->super, _gzip_string);
+  return rval;
+};
+
+void GzipCompressor_free(GzipCompressor *compressor)
+{
+  StreamCapableCompressor_free(compressor->super);
+}
+
+DeflateCompressor *DeflateCompressor_new(void)
+{
+  DeflateCompressor *rval = g_malloc(sizeof (struct DeflateCompressor));
+  _compressor_init(rval->super->super);
+  _stream_capable_compressor_init(rval->super);
+  _compressor_set_algorithm(rval->super->super, _deflate_string);
+  return rval;
+};
+
+void DeflateCompressor_free(GzipCompressor *compressor)
+{
+
 }

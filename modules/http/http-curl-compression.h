@@ -62,10 +62,41 @@ struct Compressor
   gboolean (*compress) (Compressor*);
 };
 
-Compressor *compressor_new_gzip(void);
+void Compressor_free(Compressor* compressor);
 
-Compressor *compressor_new_deflate(void);
+typedef struct StreamCapableCompressor StreamCapableCompressor;
+struct StreamCapableCompressor
+{
+  Compressor *super;
 
-void compressor_free(Compressor* compressor);
+  const void* _source_stream;
+  void (*set_source_stream) (void*);
+  gboolean (*compress_stream) (StreamCapableCompressor*);
+  gboolean (*end_compress_stream) (StreamCapableCompressor*);
+};
+
+void StreamCapableCompressor_free(StreamCapableCompressor* compressor);
+
+typedef struct GzipCompressor GzipCompressor;
+struct GzipCompressor
+{
+  StreamCapableCompressor *super;
+};
+
+GzipCompressor *
+GzipCompressor_new(void);
+
+void GzipCompressor_free(GzipCompressor* compressor);
+
+typedef struct DeflateCompressor DeflateCompressor;
+struct DeflateCompressor
+{
+  StreamCapableCompressor *super;
+};
+
+DeflateCompressor *
+DeflateCompressor_new(void);
+
+void DeflateCompressor_free(GzipCompressor* compressor);
 
 #endif //SYSLOG_NG_HTTP_CURL_COMPRESSION_H
