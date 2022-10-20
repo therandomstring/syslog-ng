@@ -513,11 +513,11 @@ _curl_perform_request(HTTPDestinationWorker *self, HTTPLoadBalancerTarget *targe
             evt_tag_str("url", target->url));
 
   curl_easy_setopt(self->curl, CURLOPT_URL, target->url);
-  curl_easy_setopt(self->curl, CURLOPT_HTTPHEADER, http_curl_header_list_as_slist(self->request_headers));
   if (owner->message_compression != CURL_COMPRESSION_UNCOMPRESSED)
     {
-      if(self->compressor->compress(self->compressor))
+      if(self->compressor->compress(self->compressor, self->request_body_compressed, self->request_body))
         {
+          curl_easy_setopt(self->curl, CURLOPT_HTTPHEADER, http_curl_header_list_as_slist(self->request_headers));
           curl_easy_setopt(self->curl, CURLOPT_POSTFIELDS, self->request_body_compressed->str);
           curl_easy_setopt(self->curl, CURLOPT_POSTFIELDSIZE, self->request_body_compressed->len);
         }
@@ -782,16 +782,15 @@ _init(LogThreadedDestWorker *s)
       self->request_body_compressed = g_string_sized_new(32768);
       switch (owner->message_compression)
         {
-          case CURL_COMPRESSION_GZIP:
-            self->compressor = (Compressor *) GzipCompressor_new();
-            break;
-          case CURL_COMPRESSION_DEFLATE:
-            self->compressor = (Compressor *) DeflateCompressor_new();
-            break;
-          default:
-            g_assert_not_reached();
+        case CURL_COMPRESSION_GZIP:
+          self->compressor = GzipCompressor_new();
+          break;
+        case CURL_COMPRESSION_DEFLATE:
+          self->compressor = DeflateCompressor_new();
+          break;
+        default:
+          g_assert_not_reached();
         }
-      self->compressor->set_compression_strings(self->compressor, self->request_body_compressed, self->request_body);
     }
   self->request_headers = http_curl_header_list_new();
   if (!(self->curl = curl_easy_init()))
