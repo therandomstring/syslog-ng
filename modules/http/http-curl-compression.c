@@ -112,18 +112,6 @@ _CompressionUnifiedErrorCode _error_code_swap_zlib(int z_err)
     }
 }
 
-_CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type);
-
-_CompressionUnifiedErrorCode _gzip_string(GString *compressed, const GString *message)
-{
-  return _deflate_type_compression(compressed, message, DEFLATE_TYPE_GZIP);
-}
-
-_CompressionUnifiedErrorCode _deflate_string(GString *compressed, const GString *message)
-{
-  return _deflate_type_compression(compressed, message, DEFLATE_TYPE_DEFLATE);
-}
-
 int _set_deflate_type_wbit(enum _DeflateAlgorithmTypes deflate_algorithm_type)
 {
   switch (deflate_algorithm_type)
@@ -137,7 +125,8 @@ int _set_deflate_type_wbit(enum _DeflateAlgorithmTypes deflate_algorithm_type)
     }
 }
 
-_CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, const GString *message, const gint deflate_algorithm_type)
+_CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, const GString *message,
+                                                       const gint deflate_algorithm_type)
 {
   z_stream _compress_stream = {0};
   gint err;
@@ -184,70 +173,34 @@ _CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, cons
   return _error_code_swap_zlib(err);
 }
 
-gboolean _compression_wrapper(Compressor *self)
+gboolean _GzipCompressor_compress(Compressor *self, GString *compressed, const GString *message)
 {
-    _CompressionUnifiedErrorCode err_compr = self->_compression_algorithm(self->_compressed_return, self->_message);
-    return _raise_compression_status(self->_compressed_return, err_compr);
+  _CompressionUnifiedErrorCode err = _deflate_type_compression(compressed, message, DEFLATE_TYPE_GZIP);
+  return _raise_compression_status(compressed, err);
 }
 
-void _set_compressor_io(Compressor *self, GString *compression_destination, const GString *message)
+gboolean _DeflateCompressor_compress(Compressor *self, GString *compressed, const GString *message)
 {
-  self->_compressed_return = compression_destination;
-  self->_message = message;
+  _CompressionUnifiedErrorCode err = _deflate_type_compression(compressed, message, DEFLATE_TYPE_DEFLATE);
+  return _raise_compression_status(compressed, err);
 }
 
-void _compressor_init(Compressor *self)
-{
-  self->compress = _compression_wrapper;
-  self->set_compression_strings = _set_compressor_io;
-}
-
-void _compressor_set_algorithm(Compressor *compressor, _CompressionUnifiedErrorCode (*algorithm) (GString*, const GString*))
-{
-  compressor->_compression_algorithm = algorithm;
-}
-
-void Compressor_free(Compressor* compressor)
+void Compressor_free(Compressor *compressor)
 {
   g_free(compressor);
 }
 
-void _stream_capable_compressor_init(StreamCapableCompressor *compressor)
+Compressor *GzipCompressor_new(void)
 {
-  compressor->set_source_stream = NULL;
-  compressor->compress_stream = NULL;
-  compressor->end_compress_stream = NULL;
-}
-
-void StreamCapableCompressor_free(StreamCapableCompressor *compressor)
-{
-  Compressor_free(compressor->super);
-}
-
-GzipCompressor *GzipCompressor_new(void)
-{
-  GzipCompressor *rval = g_malloc(sizeof (struct GzipCompressor));
-  _compressor_init(rval->super->super);
-  _stream_capable_compressor_init(rval->super);
-  _compressor_set_algorithm(rval->super->super, _gzip_string);
-  return rval;
+  GzipCompressor *rval = g_new0(struct GzipCompressor, 1);
+  rval->super.compress = _GzipCompressor_compress;
+  return &rval->super;
 };
 
-void GzipCompressor_free(GzipCompressor *compressor)
+Compressor *DeflateCompressor_new(void)
 {
-  StreamCapableCompressor_free(compressor->super);
-}
-
-DeflateCompressor *DeflateCompressor_new(void)
-{
-  DeflateCompressor *rval = g_malloc(sizeof (struct DeflateCompressor));
-  _compressor_init(rval->super->super);
-  _stream_capable_compressor_init(rval->super);
-  _compressor_set_algorithm(rval->super->super, _deflate_string);
-  return rval;
+  DeflateCompressor *rval = g_new0(struct DeflateCompressor, 1);
+  rval->super.compress = _DeflateCompressor_compress;
+  return &rval->super;
 };
 
-void DeflateCompressor_free(GzipCompressor *compressor)
-{
-
-}

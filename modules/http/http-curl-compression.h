@@ -38,7 +38,6 @@ extern gint8 CURL_COMPRESSION_DEFAULT;
 extern gchar *CURL_COMPRESSION_LITERAL_ALL;
 
 extern gchar *curl_compression_types[];
-gboolean http_dd_compress_string(GString *compression_destination, const GString *message, const gint compression);
 gboolean http_dd_curl_compression_string_match(const gchar *string, gint curl_compression_index);
 gboolean http_dd_check_curl_compression(const gchar *type);
 
@@ -55,48 +54,25 @@ typedef enum
 typedef struct Compressor Compressor;
 struct Compressor
 {
-  GString *_compressed_return;
-  const GString *_message;
-  void (*set_compression_strings) (Compressor*, GString*, const GString*);
-  _CompressionUnifiedErrorCode (*_compression_algorithm) (GString*, const GString*);
-  gboolean (*compress) (Compressor*);
+  gboolean (*compress) (Compressor *, GString *, const GString *);
 };
 
-void Compressor_free(Compressor* compressor);
-
-typedef struct StreamCapableCompressor StreamCapableCompressor;
-struct StreamCapableCompressor
-{
-  Compressor *super;
-
-  const void* _source_stream;
-  void (*set_source_stream) (void*);
-  gboolean (*compress_stream) (StreamCapableCompressor*);
-  gboolean (*end_compress_stream) (StreamCapableCompressor*);
-};
-
-void StreamCapableCompressor_free(StreamCapableCompressor* compressor);
+void Compressor_free(Compressor *compressor);
 
 typedef struct GzipCompressor GzipCompressor;
 struct GzipCompressor
 {
-  StreamCapableCompressor *super;
+  Compressor super;
 };
 
-GzipCompressor *
-GzipCompressor_new(void);
-
-void GzipCompressor_free(GzipCompressor* compressor);
+Compressor *GzipCompressor_new(void);
 
 typedef struct DeflateCompressor DeflateCompressor;
 struct DeflateCompressor
 {
-  StreamCapableCompressor *super;
+  Compressor super;
 };
 
-DeflateCompressor *
-DeflateCompressor_new(void);
-
-void DeflateCompressor_free(GzipCompressor* compressor);
+Compressor *DeflateCompressor_new(void);
 
 #endif //SYSLOG_NG_HTTP_CURL_COMPRESSION_H
