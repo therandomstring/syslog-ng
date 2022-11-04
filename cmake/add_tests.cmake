@@ -98,11 +98,13 @@ Also, fuzzing need not be done as often as unit testing.\
   endif()
 
   add_executable(${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_SRC})
+  target_include_directories(${ADD_FUZZ_TEST_TARGET} PUBLIC ${PROJECT_SOURCE_DIR}/tests/fuzzing/lib)
+  target_include_directories(${ADD_FUZZ_TEST_TARGET} PUBLIC ${PROJECT_SOURCE_DIR}/modules)
   #configure flags
   set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES COMPILE_FLAGS "-O1 -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
   set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES LINK_FLAGS "-O1, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
   #configure libraries
-  target_link_libraries(${ADD_FUZZ_TEST_TARGET} PRIVATE syslog-ng ${ADD_FUZZ_TEST_TARGET_LIBS})
+  target_link_libraries(${ADD_FUZZ_TEST_TARGET} PRIVATE syslog-ng ${ADD_FUZZ_TEST_LIBS})
 
   #TODO: add experimental feature option, such as `-print_final_stats`
 
