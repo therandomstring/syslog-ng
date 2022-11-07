@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef SYSLOG_NG_HTTP_CURL_COMPRESSION_H
-#define SYSLOG_NG_HTTP_CURL_COMPRESSION_H
+#ifndef SYSLOG_NG_COMPRESSION_H
+#define SYSLOG_NG_COMPRESSION_H
 
 #include <glib.h>
 
@@ -59,4 +59,4 @@ typedef struct DeflateCompressor DeflateCompressor;
 
 Compressor *deflate_compressor_new(void);
 
-#endif //SYSLOG_NG_HTTP_CURL_COMPRESSION_H
+#endif //SYSLOG_NG_COMPRESSION_H

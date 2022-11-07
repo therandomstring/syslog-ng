@@ -24,7 +24,7 @@
 #define _DEFLATE_WBITS_DEFLATE MAX_WBITS
 #define _DEFLATE_WBITS_GZIP MAX_WBITS + 16
 
-#include "http-curl-compression.h"
+#include "compression.h"
 #include "messages.h"
 #include <zlib.h>
 
