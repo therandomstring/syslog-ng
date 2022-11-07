@@ -42,11 +42,6 @@ gboolean http_dd_check_curl_compression(const gchar *type);
 
 
 typedef struct Compressor Compressor;
-struct Compressor
-{
-  gboolean (*compress) (Compressor *, GString *, const GString *);
-  void (*free_fn) (Compressor *self);
-};
 
 void compressor_init_instance(Compressor *self);
 
@@ -57,18 +52,10 @@ void compressor_free(Compressor *self);
 void compressor_free_method(Compressor *self);
 
 typedef struct GzipCompressor GzipCompressor;
-struct GzipCompressor
-{
-  Compressor super;
-};
 
 Compressor *gzip_compressor_new(void);
 
 typedef struct DeflateCompressor DeflateCompressor;
-struct DeflateCompressor
-{
-  Compressor super;
-};
 
 Compressor *deflate_compressor_new(void);
 

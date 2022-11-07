@@ -49,6 +49,12 @@ gboolean http_dd_check_curl_compression(const gchar *type)
   return FALSE;
 }
 
+struct Compressor
+{
+  gboolean (*compress) (Compressor *, GString *, const GString *);
+  void (*free_fn) (Compressor *self);
+};
+
 gboolean compressor_compress(Compressor *self, GString *compressed, const GString *message)
 {
   return self->compress(self, compressed, message);
@@ -223,6 +229,11 @@ _CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, cons
   return _deflate_type_compression_method(compressed, &_compress_stream, _wbits);
 }
 
+struct GzipCompressor
+{
+  Compressor super;
+};
+
 gboolean _gzip_compressor_compress(Compressor *self, GString *compressed, const GString *message)
 {
   _CompressionUnifiedErrorCode err = _deflate_type_compression(compressed, message, DEFLATE_TYPE_GZIP);
@@ -236,6 +247,11 @@ Compressor *gzip_compressor_new(void)
   rval->super.compress = _gzip_compressor_compress;
   return &rval->super;
 }
+
+struct DeflateCompressor
+{
+  Compressor super;
+};
 
 gboolean _deflate_compressor_compress(Compressor *self, GString *compressed, const GString *message)
 {
