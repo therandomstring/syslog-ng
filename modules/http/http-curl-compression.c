@@ -87,6 +87,16 @@ static inline void _handle_compression_error(GString *compression_dest, gchar *e
   g_string_free(compression_dest, TRUE);
 }
 
+typedef enum
+{
+  _COMPRESSION_OK,
+  _COMPRESSION_ERR_BUFFER,
+  _COMPRESSION_ERR_DATA,
+  _COMPRESSION_ERR_STREAM,
+  _COMPRESSION_ERR_MEMORY,
+  _COMPRESSION_ERR_UNSPECIFIED
+} _CompressionUnifiedErrorCode;
+
 static inline gboolean _raise_compression_status(GString *compression_dest, int algorithm_exit)
 {
   switch (algorithm_exit)
