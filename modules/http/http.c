@@ -290,6 +290,8 @@ http_dd_set_message_compression(LogDriver *d, const gchar *encoding)
     self->message_compression = CURL_COMPRESSION_GZIP;
   else if(http_dd_curl_compression_string_match(encoding, CURL_COMPRESSION_DEFLATE))
     self->message_compression = CURL_COMPRESSION_DEFLATE;
+  else
+    self->message_compression = CURL_COMPRESSION_DEFAULT;
 }
 
 void
