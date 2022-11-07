@@ -28,7 +28,7 @@
 #include "logthrdest/logthrdestdrv.h"
 #include "http-loadbalancer.h"
 #include "http-curl-header-list.h"
-#include "http-curl-compression.h"
+#include "compression.h"
 
 typedef struct _HTTPDestinationWorker
 {
