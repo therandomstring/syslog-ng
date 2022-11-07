@@ -28,7 +28,6 @@
 #include "messages.h"
 #include <zlib.h>
 
-gint8 CURL_COMPRESSION_TYPES_LEN = 3;
 gint8 CURL_COMPRESSION_DEFAULT = CURL_COMPRESSION_UNCOMPRESSED;
 gchar *CURL_COMPRESSION_LITERAL_ALL = "all";
 gchar *curl_compression_types[] = {"identity", "gzip", "deflate"};
