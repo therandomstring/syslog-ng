@@ -800,6 +800,8 @@ _init(LogThreadedDestWorker *s)
         default:
           g_assert_not_reached();
         }
+      gchar *buffer = g_strdup_printf("Content-Encoding: %s", curl_compression_types[owner->message_compression]);
+      owner->headers= g_list_append(owner->headers,  buffer);
     }
   self->request_headers = http_curl_header_list_new();
   if (!(self->curl = curl_easy_init()))
