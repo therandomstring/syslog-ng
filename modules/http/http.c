@@ -23,7 +23,7 @@
 
 #include "http.h"
 #include "http-worker.h"
-#include "http-curl-compression.h"
+#include "compression.h"
 
 /* HTTPDestinationDriver */
 void
