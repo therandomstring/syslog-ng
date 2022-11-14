@@ -19,8 +19,8 @@ modules_http_libhttp_la_SOURCES = \
   modules/http/http-parser.h        \
   modules/http/http-plugin.c        \
   modules/http/http-signals.h       \
-  modules/http/http-curl-compression.c \
-  modules/http/http-curl-compression.h
+  modules/http/compression.c \
+  modules/http/compression.h
 
 modules_http_libhttp_ladir = ${pkgincludedir}/modules/http
 
