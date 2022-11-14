@@ -129,7 +129,7 @@ modules/java-modules/common
 modules/java/(native|proxies|src)
 modules/native
 modules/http/http-signals.h
-modules/http/http-curl-compression\.[ch]
+modules/http/compression\.[ch]
 tests/loggen
 persist-tool
 modules/python-modules/syslogng/__init__\.py
