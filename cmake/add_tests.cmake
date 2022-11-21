@@ -89,24 +89,26 @@ Also, fuzzing need not be done as often as unit testing.\
   cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET" "SRC;LIBS;CORPUS_DIR;EXEC_PARMS" ${ARGN})
 
   if(NOT ADD_FUZZ_TEST_SRC)
-    message(NOTICE "No source file was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying testing/${ADD_FUZZ_TEST_TARGET}.c")
-    set(ADD_FUZZ_TEST_SRC tests/${ADD_FUZZ_TEST_TARGET}.c)
+    message(NOTICE "No source file was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying targets/${ADD_FUZZ_TEST_TARGET}.c")
+    set(ADD_FUZZ_TEST_SRC targets/${ADD_FUZZ_TEST_TARGET}.c)
   endif()
   if(NOT ADD_FUZZ_TEST_CORPUS_DIR)
     message(NOTICE "No corpus directory was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying corpora/")
-    set(ADD_FUZZ_TEST_CORPUS_DIR corpora)
+    set(ADD_FUZZ_TEST_CORPUS_DIR ${PROJECT_SOURCE_DIR}/tests/fuzzing/tests/${ADD_FUZZ_TEST_TARGET}/corpora)
+  else()
+    set(ADD_FUZZ_TEST_CORPUS_DIR ${PROJECT_SOURCE_DIR}/tests/fuzzing/tests/${ADD_FUZZ_TEST_TARGET}/${ADD_FUZZ_TEST_CORPUS_DIR})
   endif()
 
   add_executable(${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_SRC})
   target_include_directories(${ADD_FUZZ_TEST_TARGET} PUBLIC ${PROJECT_SOURCE_DIR}/tests/fuzzing/lib)
   target_include_directories(${ADD_FUZZ_TEST_TARGET} PUBLIC ${PROJECT_SOURCE_DIR}/modules)
   #configure flags
-  set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES COMPILE_FLAGS "-O1 -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
-  set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES LINK_FLAGS "-O1, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
+  set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES COMPILE_FLAGS "-o1 -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
+  set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES LINK_FLAGS "-o1, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
   #configure libraries
   target_link_libraries(${ADD_FUZZ_TEST_TARGET} PRIVATE syslog-ng ${ADD_FUZZ_TEST_LIBS})
 
   #TODO: add experimental feature option, such as `-print_final_stats`
 
-  add_test(${ADD_FUZZ_TEST_TARGET}  ${ADD_FUZZ_TEST_TARGET} "${ADD_FUZZ_TEST_CORPUS_DIR} ${ADD_FUZZ_TEST_EXEC_PARM}" )
+  add_test(fuzz_${ADD_FUZZ_TEST_TARGET}  ${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_CORPUS_DIR} ${ADD_FUZZ_TEST_EXEC_PARM})
 endfunction()
