@@ -1,1 +1,1 @@
-add_fuzz_test(TARGET fuzz_example SRC targets/example1.c)
+add_fuzz_test(TARGET example-test SRC targets/example1.c)
