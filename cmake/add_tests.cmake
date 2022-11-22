@@ -108,6 +108,9 @@ Also, fuzzing need not be done as often as unit testing.\
   #configure libraries
   target_link_libraries(${ADD_FUZZ_TEST_TARGET} PRIVATE syslog-ng ${ADD_FUZZ_TEST_LIBS})
   #set timeout
+  if(ADD_FUZZ_TEST_TIMEOUT LESS 20)
+    message(FATAL_ERROR "Test timeout set too short.")
+  endif()
   if(NOT ADD_FUZZ_TEST_TIMEOUT)
     set(ADD_FUZZ_TEST_TIMEOUT 1500)
   endif()
