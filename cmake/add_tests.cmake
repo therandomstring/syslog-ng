@@ -86,7 +86,7 @@ Also, fuzzing need not be done as often as unit testing.\
     ")
   endif()
 
-  cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET" "SRC;LIBS;CORPUS_DIR;EXEC_PARMS;TIMEOUT" ${ARGN})
+  cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET;CORPUS_DIR" "SRC;LIBS;EXEC_PARMS" ${ARGN})
 
   if(NOT ADD_FUZZ_TEST_SRC)
     message(NOTICE "No source file was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying targets/${ADD_FUZZ_TEST_TARGET}.c")
