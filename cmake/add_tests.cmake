@@ -86,7 +86,7 @@ Also, fuzzing need not be done as often as unit testing.\
     ")
   endif()
 
-  cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET" "SRC;LIBS;CORPUS_DIR;EXEC_PARMS" ${ARGN})
+  cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET" "SRC;LIBS;CORPUS_DIR;EXEC_PARMS;TIMEOUT" ${ARGN})
 
   if(NOT ADD_FUZZ_TEST_SRC)
     message(NOTICE "No source file was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying targets/${ADD_FUZZ_TEST_TARGET}.c")
@@ -110,5 +110,6 @@ Also, fuzzing need not be done as often as unit testing.\
 
   #TODO: add experimental feature option, such as `-print_final_stats`
 
-  add_test(fuzz_${ADD_FUZZ_TEST_TARGET}  ${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_CORPUS_DIR} ${ADD_FUZZ_TEST_EXEC_PARM})
+  add_test(fuzz_${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_TARGET} -timeout=${ADD_FUZZ_TEST_TIMEOUT} ${ADD_FUZZ_TEST_EXEC_PARM} ${ADD_FUZZ_TEST_CORPUS_DIR} )
+  set_tests_properties(fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTIES TIMEOUT ${ADD_FUZZ_TEST_TIMEOUT})
 endfunction()
