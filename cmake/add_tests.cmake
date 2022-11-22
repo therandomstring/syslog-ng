@@ -86,7 +86,7 @@ Also, fuzzing need not be done as often as unit testing.\
     ")
   endif()
 
-  cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET;CORPUS_DIR" "SRC;LIBS;EXEC_PARMS" ${ARGN})
+  cmake_parse_arguments(ADD_FUZZ_TEST "" "TARGET;CORPUS_DIR;TIMEOUT;TESTCASE_TIMEOUT" "SRC;LIBS;EXEC_PARMS" ${ARGN})
 
   if(NOT ADD_FUZZ_TEST_SRC)
     message(NOTICE "No source file was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying targets/${ADD_FUZZ_TEST_TARGET}.c")
@@ -107,9 +107,20 @@ Also, fuzzing need not be done as often as unit testing.\
   set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES LINK_FLAGS "-o1, -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer")
   #configure libraries
   target_link_libraries(${ADD_FUZZ_TEST_TARGET} PRIVATE syslog-ng ${ADD_FUZZ_TEST_LIBS})
+  #set timeout
+  if(NOT ADD_FUZZ_TEST_TIMEOUT)
+    set(ADD_FUZZ_TEST_TIMEOUT 1500)
+  endif()
+  MATH(EXPR ADD_FUZZ_TEST_FUZZER_TOTAL_TIMEOUT ${ADD_FUZZ_TEST_TIMEOUT}-10)
+  if(NOT ADD_FUZZ_TEST_TESTCASE_TIMEOUT)
+    set(ADD_FUZZ_TEST_TESTCASE_TIMEOUT 60)
+  endif()
+  if(ADD_FUZZ_TEST_TESTCASE_TIMEOUT GREATER ADD_FUZZ_TEST_FUZZER_TOTAL_TIMEOUT)
+    message(WARNING "Total timeout is not significantly longer than the per-testcase timeout duration.\nThis might lead to problems.")
+  endif()
 
   #TODO: add experimental feature option, such as `-print_final_stats`
 
-  add_test(fuzz_${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_TARGET} -timeout=${ADD_FUZZ_TEST_TIMEOUT} ${ADD_FUZZ_TEST_EXEC_PARM} ${ADD_FUZZ_TEST_CORPUS_DIR} )
+  add_test(fuzz_${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_TARGET} -max_total_time=${ADD_FUZZ_TEST_FUZZER_TOTAL_TIMEOUT} -timeout=${ADD_FUZZ_TEST_TESTCASE_TIMEOUT} ${ADD_FUZZ_TEST_EXEC_PARM} ${ADD_FUZZ_TEST_CORPUS_DIR} )
   set_tests_properties(fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTIES TIMEOUT ${ADD_FUZZ_TEST_TIMEOUT})
 endfunction()
