@@ -122,8 +122,6 @@ Also, fuzzing need not be done as often as unit testing.\
     message(WARNING "Total timeout is not significantly longer than the per-testcase timeout duration.\nThis might lead to problems.")
   endif()
 
-  #TODO: add experimental feature option, such as `-print_final_stats`
-
   if(ADD_FUZZ_TEST_EXPERIMENTAL)
     set(ADD_FUZZ_TEST_EXEC_PARM ${ADD_FUZZ_TEST_EXEC_PARM} -print_final_stats=1 -detect_leaks=1)
     set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES COMPILE_FLAGS "-o1 -fsanitize=\"fuzzer,memory,signed-integer-overflow,null,alignment\" -fno-omit-frame-pointer")
