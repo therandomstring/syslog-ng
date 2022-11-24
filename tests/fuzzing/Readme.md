@@ -3,7 +3,7 @@
 ## Contents:
 1. [What is fuzzing](#what-is-fuzzing)
 2. [Used tools](#this-is-what-you-will-need)
-   1. [LibFuzzer](#libfuzzer)
+   1. [LibFuzzer](#libfuzzerhttpsllvmorgdocslibfuzzerhtmlfaq)
    2. [Clang](#clang)
 3. [How to fuzz](#how-to-fuzz-syslog-ng)
    1. [Fuzz targets](#fuzz-targets)
@@ -17,7 +17,7 @@ According to [OWASP](https://owasp.org/www-community/Fuzzing),
 
 Here we take a more white box approach, and try random/semi-random inputs on syslog.ng or its parts.
 
-## Used tools
+## This is what you will need
 
 In order to fuzz our software, you will need the following tools:
 
