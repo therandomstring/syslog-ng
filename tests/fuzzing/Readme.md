@@ -97,6 +97,8 @@ The reason for this is twofold:
 
 ### Building with CMake
 
+First you should make a new directory. This should have the same name as your testcase for integration with the test environment. Place this new directory on the following path: `${PATH_TO_SYSLOG_NG_REPO}/tests/fuzzing/tests/${YOUR_TEST_DIRECTORY}`
+
 You should add your `CMakeLists.txt` file to your test directory (on the same level as your `targets` and `corpora` folder). You should also add your module to `tests/fuzzing/tests/CMakeLists.txt`.
 
 The minimum required `CMakeLists.txt` should contain at least a test target. To add this target, use the provided `add_fuzz_test()` function. Do not use CMake's integrated `add_executable()` or `add_custom_target()` functions unless you are completely sure in what you are doing, as these do not set the variables and command arguments used by CTest.
@@ -108,10 +110,23 @@ add_fuzz_target(TARGET example SRC targets/target_1.c LIBS lib1 lib2 lib3 CORPUS
 ```
 
 The only required argument is `TARGET`. If you do not provide other arguments, the function will try to apply default values. These are:
- * `SRC`: `targets/${TARGET}.c`
- * `LIBS`: empty
- * `CORPUS_DIR`: `corpora`
- * `EXEC_PARMS`: `-print_pcs -print_final_stats`
+
+| argument         |  type  |                default                | description                                                                                                                                                                                                       |
+|------------------|:------:|:-------------------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| TARGET           | SINGLE |             **required**              | The name of your testcase. CTest will apply a "fuzz_" prefix to it.                                                                                                                                               |
+| EXPERIMENTAL     | OPTION |                  off                  | Enables some features not supported by default. Might result in better performance or more useful results.                                                                                                        |
+| CORPUS_DIR       | SINGLE |                corpora                | Defines the directory in which the test input examples are located.                                                                                                                                               |
+| TIMEOUT          | SINGLE |                1500 s                 | Defines the CTest timeout. For technical reasons LibFuzzer stops 10 seconds before this deadline to allow proper shutdown. Take care to set a long enough deadline to account for a possible testcase to timeout. |
+| TESTCASE_TIMEOUT | SINGLE |                 60 s                  | Sets the timeout for a given testcase. Should be set based on the test, but the 60 seconds by default is a good blanket value.                                                                                    |
+| SRC              | MULTI  |         targets/`${TARGET}`.c         | A list of your test sources. In theory, multiple sources are possible, but in practice, LibFuzzer might not support this.                                                                                         |
+| LIBS             | MULTI  | empty (syslog-ng is added by default) | A list of the libraries your testcase should be compiled against.                                                                                                                                                 |
+| EXEC_PARMS       | MULTI  |                 empty                 | Any extra parameters you might want to pass on to LibFuzzer. For more info, consult [the LibFuzzer manual](https://llvm.org/docs/LibFuzzer.html#options).                                                         |
+
+The experimental features are the following:
+ * `-print_final_stats`
+ * `-detect-leaks`
+ * `UBSAN` (sanitize undefined behaviour)
+ * `MSAN` (memory sanitizing) instead of `ASAN` (address sanitizing)
 
 You must also append your folder to `tests/fuzzing/tests/CMakeLists.txt` with the `add_subdirectory()` function.
 
