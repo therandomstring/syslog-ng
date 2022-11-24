@@ -35,6 +35,14 @@ Since LibFuzzer is part of Clang, if you want to fuzz syslog-ng, you will need t
 
 Fuzzing with Clang requires `clang` and `llvm` development packages. These might change distribution to distribution. Check with your distributor to inquire about package names.
 
+___
+**NOTICE**
+
+Unfortunately some of our modules might not compile well, or not compile at all with Clang. As we are continuously trying to improve syslog-ng, the list of these is subject to change. We are currently compiling a list of these problematic modules, and it will be included as soon as ready.
+
+<!-- TODO: include list when ready -->
+___
+
 ## How to fuzz syslog-ng
 
 The LibFuzzer library used by our fuzzing framework needs tests to run. These tests consist of two parts: test code and sample inputs. The code part is called a test target, and a sample input is called a corpus.
@@ -60,6 +68,8 @@ Please put each test in its own subdirectory in this folder. You can look at the
             - CMakeLists.txt (add your folder)
             - Makefile.am (add your folder)
 ```
+
+Your test folder should have the same name as your testcase for integration with the test environment.
 
 In addition to the corpora and fuzz targets, you also have to specify your CMake or automake target (either or both). You must also add your folder to the test level CMake or automake makefile (depending on your build environment). 
 
@@ -96,8 +106,6 @@ The reason for this is twofold:
 <!-- TODO write tutorial on writing corpora. -->
 
 ### Building with CMake
-
-First you should make a new directory. This should have the same name as your testcase for integration with the test environment. Place this new directory on the following path: `${PATH_TO_SYSLOG_NG_REPO}/tests/fuzzing/tests/${YOUR_TEST_DIRECTORY}`
 
 You should add your `CMakeLists.txt` file to your test directory (on the same level as your `targets` and `corpora` folder). You should also add your module to `tests/fuzzing/tests/CMakeLists.txt`.
 
