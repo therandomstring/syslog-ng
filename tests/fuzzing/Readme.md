@@ -49,6 +49,12 @@ The LibFuzzer library used by our fuzzing framework needs tests to run. These te
 
 Please put each test in its own subdirectory in this folder. You can look at the example test to get an idea of how a test should look like, but the structure should be like this:
 
+___
+**NOTICE**
+
+Fuzzing might find bugs in libs used by syslog-ng. These are outside our influence, and should be reported to the respective project owner.
+___
+
 ```
 /.../syslog-ng
    - tests
