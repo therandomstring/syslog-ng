@@ -148,3 +148,6 @@ You must also append your folder to `tests/fuzzing/tests/CMakeLists.txt` with th
 
 automake is currently not supported, but since it is our primary build system, it will be upon release.
 
+### TODO
+
+ * Implement rerun failed mode (--rerun-failed --output-on-failure)
