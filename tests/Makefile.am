@@ -31,3 +31,4 @@ coverage-clean:
 include tests/loggen/Makefile.am
 include tests/functional/Makefile.am
 include tests/light/Makefile.am
+include tests/fuzzing/Makefile.am
