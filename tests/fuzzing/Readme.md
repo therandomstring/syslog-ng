@@ -49,6 +49,12 @@ The LibFuzzer library used by our fuzzing framework needs tests to run. These te
 
 Please put each test in its own subdirectory in this folder. You can look at the example test to get an idea of how a test should look like, but the structure should be like this:
 
+___
+**NOTICE**
+
+Fuzzing might find bugs in libs used by syslog-ng. These are outside our influence, and should be reported to the respective project owner.
+___
+
 ```
 /.../syslog-ng
    - tests
@@ -142,3 +148,6 @@ You must also append your folder to `tests/fuzzing/tests/CMakeLists.txt` with th
 
 automake is currently not supported, but since it is our primary build system, it will be upon release.
 
+### TODO
+
+ * Implement rerun failed mode (--rerun-failed --output-on-failure)
