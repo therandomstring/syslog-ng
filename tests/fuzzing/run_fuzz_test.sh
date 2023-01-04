@@ -31,40 +31,40 @@ FALSE=1
 partition_line_length=32
 
 ## Formatting and partitioning
-print_partition_template(){
-  for (( printhead=0; printhead<=partition_line_length; printhead++ )); do
-      printf -- "%s" "$1"
+print_partition_template() {
+  for ((printhead = 0; printhead <= partition_line_length; printhead++)); do
+    printf -- "%s" "$1"
   done
   printf "\n"
 }
 
-print_partition_hash(){
+print_partition_hash() {
   print_partition_template "#"
 }
 
-print_partition_dash(){
+print_partition_dash() {
   print_partition_template "-"
 }
 
-print_partition_underline(){
+print_partition_underline() {
   print_partition_template "_"
 }
 
-print_partition_star(){
+print_partition_star() {
   print_partition_template "*"
 }
 
-partition_h1(){
+partition_h1() {
   print_partition_hash
 }
 
-partition_h2(){
+partition_h2() {
   print_partition_star
 }
-partition_h3(){
+partition_h3() {
   print_partition_underline
 }
-partition_h4(){
+partition_h4() {
   print_partition_dash
 }
 
@@ -184,9 +184,9 @@ composite_compiler_options() {
 linker_options=""
 composite_linker_options() {
   if $experimental; then
-    linker_options="-o1 -fsanitize=\"fuzzer,memory,signed-integer-overflow,null,alignment\" -fno-omit-frame-pointer"
+    linker_options="-o1 -fsanitize=fuzzer,memory,signed-integer-overflow,null,alignment -fno-omit-frame-pointer"
   else
-    linker_options="-o1 -fsanitize=\"address,fuzzer\" -fno-omit-frame-pointer"
+    linker_options="-o1 -fsanitize=address,fuzzer -fno-omit-frame-pointer"
   fi
 }
 
@@ -317,13 +317,26 @@ ENDCHECK
 printf "Compiling...\n"
 partition_h3
 
-#if ! $(cd "tests/${target_name}" 2>/dev/null);then
-#  printf 'could not find directory "%s"\n' "$target_name"
-#  printf "Exiting\n"
-#  exit 1
-#fi
+if ! $(cd "tests/${target_name}" 2>/dev/null); then
+  printf 'could not find directory "%s"\n' "$target_name"
+  printf "Exiting\n"
+  exit 1
+fi
 
-if ! clang -g -o "$fuzz_target_name" "$linker_options" "$source"; then
+#parsing variables
+linker_options_array=("$linker_options")
+exec_parameters_array=("$exec_parameters")
+libraries_array=("$libraries")
+for i in $(eval echo "{0..${#libraries_array[@]}}") ; do
+    libraries_array[i]="-l${libraries_array[i]}"
+done
+
+for i in ${libraries_array[@]} ; do
+    echo $i
+done
+
+#if ! clang -g ${linker_options_array[@]} -L../../lib  -lsyslog-ng -o tests/"$target_name"/"$fuzz_target_name" "$source"; then
+if ! clang -g ${linker_options_array[@]} -o tests/"$target_name"/"$fuzz_target_name" "$source"; then
   printf "Compilation failed, exiting.\n"
   partition_h1
   exit 1
@@ -331,5 +344,15 @@ fi
 
 printf "Running test...\n"
 partition_h2
-./"$fuzz_target_name" -max_total_time="$timeout" -timeout="$testcase_timeout" "$exec_parameters" "$corpus"
+./tests/"$target_name"/"$fuzz_target_name" -max_total_time="$timeout" -timeout="$testcase_timeout" ${exec_parameters_array[@]} "$corpus"
+partition_h2
+
+printf "Cleanup...\n"
+partition_h2
+
+if ! $(rm tests/"$target_name"/"$fuzz_target_name"); then
+  printf "An error occurred during cleanup. Please remove unnecessary files manually.\n"
+else
+  printf "Cleanup successful.\n"
+fi
 partition_h1
