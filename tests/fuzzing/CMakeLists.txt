@@ -17,3 +17,4 @@ endif()
 find_package(LLVM)
 
 add_subdirectory(tests)
+add_subdirectory(lib)
