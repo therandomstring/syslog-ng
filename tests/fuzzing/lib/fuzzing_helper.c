@@ -26,7 +26,8 @@
 #include "apphook.h"
 #include "../../../modules/syslogformat/syslog-format.h"
 
-
+//DONE: secret storage init fails in app_startup()
+//FIXME: app_shutdown() g_list_free() fails on subsequent runs
 AppInfo *
 app_init(const char *module)
 {
