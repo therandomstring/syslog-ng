@@ -26,28 +26,43 @@
 #include "apphook.h"
 #include "../../../modules/syslogformat/syslog-format.h"
 
+void
+_app_load_extra_module_method(AppInfo *app, const char *module){
+  cfg_load_module(app->config, module);
+}
+
 //DONE: secret storage init fails in app_startup()
 //FIXME: app_shutdown() g_list_free() fails on subsequent runs
-AppInfo *
-app_init(const char *module)
+void
+_app_init(AppInfo *app)
 {
-  AppInfo *app = malloc(sizeof(AppInfo));
+  app->load_module = _app_load_extra_module_method;
   app->config = cfg_new_snippet();
   app_startup();
-  cfg_load_module(app->config, module);
   cfg_load_module(app->config, "syslogformat");
   msg_format_options_defaults(&app->parse_options);
+}
 
+AppInfo *
+app_new(void)
+{
+  AppInfo *app = malloc(sizeof(AppInfo));
+  _app_init(app);
   return app;
 }
 
 void
-app_deinit(AppInfo *app)
+_app_deinit(AppInfo *app)
 {
   cfg_free(app->config);
   app_shutdown();
   iv_deinit();
+}
 
+void
+app_free(AppInfo *app)
+{
+  _app_deinit(app);
   free(app);
 }
 

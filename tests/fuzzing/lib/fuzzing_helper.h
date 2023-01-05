@@ -26,18 +26,24 @@
 #include "cfg.h"
 #include "msg-format.h"
 
-typedef struct AppInfo{
+typedef struct AppInfo AppInfo;
+struct AppInfo
+{
   GlobalConfig *config;
   MsgFormatOptions parse_options;
-}AppInfo;
+  void (*load_module) (AppInfo *self, const char* module);
+};
 
+/*
+ * Initialises the app
+ */
 AppInfo *
-app_init(const char* module);
+app_new(void);
 
 void
-app_deinit(AppInfo *app);
+app_free(AppInfo *app);
 
-/**
+/*
  * This is needed, as destinations only accept LogMessages.
  * From here on, *EVERYTHING* is officially fuzzing `syslogformat`
  */
