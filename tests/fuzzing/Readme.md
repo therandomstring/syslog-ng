@@ -19,7 +19,7 @@
 According to [OWASP](https://owasp.org/www-community/Fuzzing),
 > Fuzz testing or Fuzzing is a Black Box software testing technique, which basically consists in finding implementation bugs using malformed/semi-malformed data injection in an automated fashion.
 
-Here we take a more white box approach, and try random/semi-random inputs on syslog.ng or its parts.
+Here we take a more white box approach, and try random/semi-random inputs on syslog-ng or its parts.
 
 ## This is what you will need
 
@@ -56,7 +56,7 @@ Please put each test in its own subdirectory in this folder. You can look at the
 ___
 **NOTICE**
 
-Fuzzing might find bugs in libs used by syslog-ng. These are outside our influence, and should be reported to the respective project owner.
+Fuzzing might find bugs in libs used by syslog-ng. These are outside our influence, and should be reported to the respective project owners.
 ___
 
 ```
