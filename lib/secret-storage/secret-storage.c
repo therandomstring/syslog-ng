@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2023 One Identity LLC
  * Copyright (c) 2018 Balabit
  *
  * This library is free software; you can redistribute it and/or
