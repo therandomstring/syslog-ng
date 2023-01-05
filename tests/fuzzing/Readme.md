@@ -8,6 +8,10 @@
 3. [How to fuzz](#how-to-fuzz-syslog-ng)
    1. [Fuzz targets](#fuzz-targets)
    2. [Corpora](#corpora)
+   3. [Building targets with CMake](#building-with-cmake)
+   4. [Building targets with automake](#building-with-automake)
+   5. [Fuzzing without a build system](#running-fuzz-tests-without-a-build-system)
+   6. [Experimental features](#experimental-features)
 
 
 ## What is fuzzing
@@ -101,6 +105,10 @@ if by any chance you are using C++. Since syslog-ng is written in C, the latter 
 
 Please put each target in its own `.c` source file. Try to write simple tests to maximize LibFuzzer's performance.
 
+#### Helper libraries
+
+We have provided some helper libraries with this framework to ease writing testcases. You will find these in the `lib` directory under `fuzzing`. They are not documented here, but instead are commented in the header(s).
+
 ### Corpora
 
 The sample input used by mutational fuzzers is called a corpus (pl. corpuses or corpora). LibFuzzer in theory operates perfectly without corpora, but since syslog-ng sanitizes its own inputs, running tests without any is not recommended.
@@ -128,7 +136,7 @@ The only required argument is `TARGET`. If you do not provide other arguments, t
 | argument         |  type  |                default                | description                                                                                                                                                                                                       |
 |------------------|:------:|:-------------------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | TARGET           | SINGLE |             **required**              | The name of your testcase. CTest will apply a "fuzz_" prefix to it.                                                                                                                                               |
-| EXPERIMENTAL     | OPTION |                  off                  | Enables some features not supported by default. Might result in better performance or more useful results.                                                                                                        |
+| EXPERIMENTAL     | OPTION |                  off                  | Enables some [features](#experimental-features) not supported by default. Might result in better performance or more useful results.                                                                              |
 | CORPUS_DIR       | SINGLE |                corpora                | Defines the directory in which the test input examples are located.                                                                                                                                               |
 | TIMEOUT          | SINGLE |                1500 s                 | Defines the CTest timeout. For technical reasons LibFuzzer stops 10 seconds before this deadline to allow proper shutdown. Take care to set a long enough deadline to account for a possible testcase to timeout. |
 | TESTCASE_TIMEOUT | SINGLE |                 60 s                  | Sets the timeout for a given testcase. Should be set based on the test, but the 60 seconds by default is a good blanket value.                                                                                    |
@@ -136,18 +144,46 @@ The only required argument is `TARGET`. If you do not provide other arguments, t
 | LIBS             | MULTI  | empty (syslog-ng is added by default) | A list of the libraries your testcase should be compiled against.                                                                                                                                                 |
 | EXEC_PARMS       | MULTI  |                 empty                 | Any extra parameters you might want to pass on to LibFuzzer. For more info, consult [the LibFuzzer manual](https://llvm.org/docs/LibFuzzer.html#options).                                                         |
 
-The experimental features are the following:
- * `-print_final_stats`
- * `-detect-leaks`
- * `UBSAN` (sanitize undefined behaviour)
- * `MSAN` (memory sanitizing) instead of `ASAN` (address sanitizing)
-
 You must also append your folder to `tests/fuzzing/tests/CMakeLists.txt` with the `add_subdirectory()` function.
 
 ### Building with automake
 
 automake is currently not supported, but since it is our primary build system, it will be upon release.
 
-### TODO
+Fuzzing with automake is will be possible by the included shell script.
+To add a fuzz test target, the following are necessary:
+ * Add a makefile (`Makefile.am`) to your test directory.
+ * Include your directory in the `EXTRA_DIST` section in `fuzzing/tests/Makefile.am`
+ * In your makefile, add a target to the included shell script. The correct argumentation is found int the [corresponding section](#running-fuzz-tests-without-a-build-system).
+
+### Running fuzz tests without a build system
+We have included [`run_fuzz_test.sh`](run_fuzz_test.sh) to enable adding fuzz tests as an automake/makefile target. Incidentally this same script can be used to run testcases without a build system. This can be useful, when a full incremental build (such as with CTest) is undesirable.</br>
+To usage of the script is as follows: (the same information is printed with the `-h` or `--help` option)
+
+| switch             | short |        argument        |   default value    | description                                                  |
+|--------------------|:-----:|:----------------------:|:------------------:|--------------------------------------------------------------|
+| --help             |  -h   |         [NONE]         |       [NONE]       | Prints help message                                          |
+| --target           |  -t   |      target name       |    [MANDATORY]     | The name of your target. This option is mandatory.           |
+| --source           |  -s   |      source file       | targets/[TARGET].c | Sets the source file containing the fuzz testcase.           |
+| --corpus           |  -c   |    corpus directory    |      corpora       | Sets the directory containing the corpora.                   |
+| --libraries        |  -l   | extra linker libraries |      [EMPTY]       | Specifies extra libraries to link the target against.        |
+| --exec-parameters  |  -e   |  execution parameters  |      [EMPTY]       | Passes on extra execution parameters to the fuzzer.          |
+| --timeout          |  -T   |   timeout in seconds   |        1500        | Defines a total timeout for the fuzzer.                      |
+| --testcase-timeout |  -C   |   timeout in seconds   |         60         | Defines a per-testcase timeout.                              |
+| --experimental     |  -E   |         [NONE]         |       [NONE]       | Enables the [experimental features](#experimental-features). |
+
+### Experimental features
+
+libFuzzer comes with certain non-standard or not-yet-stable features. In addition to this, certain standard features are also switched off by default in this framework.</br>
+You can switch on some of these by enabling the experimental feature set.
+
+The experimental features are the following:
+* `-print_final_stats`
+* `-detect-leaks`
+* `UBSAN` (sanitize undefined behaviour)
+* `MSAN` (memory sanitizing) instead of `ASAN` (address sanitizing)
+
+## TODO
 
  * Implement rerun failed mode (--rerun-failed --output-on-failure)
+ * -use_value_profile in experimental mode (also add to the paragraph)
