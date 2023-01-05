@@ -13,7 +13,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
   ExampleDestinationDriver *dd = (ExampleDestinationDriver *) example_destination_dd_new(app->config);
   ExampleDestinationWorker *dw = (ExampleDestinationWorker *) example_destination_dw_new(&dd->super, 0);
 
-  example_destination_dd_set_filename((LogDriver *) dd, "dd_output");
+  example_destination_dd_set_filename((LogDriver *) dd, "fuzz_example-test_output");
 
   LogMessage *message = syslog_message_new(app, data, size);
 
