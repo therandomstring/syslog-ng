@@ -79,7 +79,7 @@ help() {
 
       -t | --target [target name] : _______ This is the name of your target. This option is mandatory. This should be the same as the folder of the testcase under 'fuzzing/tests'.
 
-      -s | --source [source.c]: ___________ Sets the testcase source file. By default it is 'fuzzing/tests/\${target}/target/\${target}.c'.
+      -s | --source [source.c]: ___________ Sets the testcase source file. By default it is 'fuzzing/tests/\${target}/targets/\${target}.c'.
 
       -c | --corpus [corpus dir]: _________ Sets the directory name containing the corpora under your testcase folder. By default it is 'fuzzing/tests/\${target}/corpora'.
 
@@ -356,3 +356,7 @@ else
   printf "Cleanup successful.\n"
 fi
 partition_h1
+
+
+##TODO: add include directories
+##TODO: add library support

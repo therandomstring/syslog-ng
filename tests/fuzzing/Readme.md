@@ -187,3 +187,4 @@ The experimental features are the following:
 
  * Implement rerun failed mode (--rerun-failed --output-on-failure)
  * -use_value_profile in experimental mode (also add to the paragraph)
+ * add -reload=0 to experimental features
