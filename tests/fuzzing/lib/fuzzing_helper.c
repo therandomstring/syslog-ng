@@ -79,3 +79,11 @@ syslog_message_free(LogMessage *message)
 {
   log_msg_unref(message);
 }
+
+void
+destination_worker_connect_and_insert(LogThreadedDestWorker *destination_worker, LogMessage *message)
+{
+  log_threaded_dest_worker_connect((LogThreadedDestWorker *) destination_worker);
+  log_threaded_dest_worker_insert((LogThreadedDestWorker *) destination_worker, message);
+  log_threaded_dest_worker_disconnect((LogThreadedDestWorker *) destination_worker);
+}

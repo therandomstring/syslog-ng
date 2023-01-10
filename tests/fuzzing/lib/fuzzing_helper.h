@@ -25,6 +25,7 @@
 
 #include "cfg.h"
 #include "msg-format.h"
+#include "logthrdest/logthrdestdrv.h"
 
 typedef struct AppInfo AppInfo;
 struct AppInfo
@@ -34,23 +35,40 @@ struct AppInfo
   void (*load_module) (AppInfo *self, const char* module);
 };
 
-/*
+/**
  * Initialises the app
  */
 AppInfo *
 app_new(void);
 
+/**
+ * Use this to free up your AppInfo at the end of the testcase
+ * @param app
+ */
 void
 app_free(AppInfo *app);
 
-/*
+/**
  * This is needed, as destinations only accept LogMessages.
  * From here on, *EVERYTHING* is officially fuzzing `syslogformat`
  */
 LogMessage *
 syslog_message_new(AppInfo *app, const uint8_t *data, size_t size);
 
+/**
+ * If you used a LogMessage allocated with syslog_message_new, use this function to free it.
+ * @param message
+ */
 void
 syslog_message_free(LogMessage *message);
+
+/**
+ * Processes given message with the destination worker.
+ * Performs a single connect-insert-disconnect cycle.
+ * @param destination_worker
+ * @param message
+ */
+void
+destination_worker_connect_and_insert(LogThreadedDestWorker *destination_worker, LogMessage *message);
 
 #endif //SYSLOG_NG_FUZZING_HELPER_H
