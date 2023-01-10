@@ -39,9 +39,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
 
   LogMessage *message = syslog_message_new(app, data, size);
 
-  log_threaded_dest_worker_connect((LogThreadedDestWorker *) dw);
-  log_threaded_dest_worker_insert((LogThreadedDestWorker *) dw, message);
-  log_threaded_dest_worker_disconnect((LogThreadedDestWorker *) dw);
+  destination_worker_connect_and_insert((LogThreadedDestWorker *) dw, message);
 
   syslog_message_free(message);
   app_free(app);
