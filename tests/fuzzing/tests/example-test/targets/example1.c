@@ -22,14 +22,13 @@
 
 #include "examples/destinations/example_destination/example_destination.h"
 #include "examples/destinations/example_destination/example_destination_worker.h"
-#include "msg-format.h"
 #include "fuzzing_helper.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
   if (size <= 1) return 0;
 
   AppInfo *app = app_new();
-  app->load_module(app, "example-test");
+  app->load_module(app, "example_destination");
 
   //TODO: maybe this also can be a helper macro/template
   ExampleDestinationDriver *dd = (ExampleDestinationDriver *) example_destination_dd_new(app->config);
@@ -37,7 +36,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
 
   example_destination_dd_set_filename((LogDriver *) dd, "fuzz_example-test_output");
 
-  LogMessage *message = syslog_message_new(app, data, size);
+  int message_parse_success;
+  LogMessage *message = syslog_message_new(app, data, size, &message_parse_success);
+  if(!message_parse_success)
+    {
+      return 0;
+    }
 
   destination_worker_connect_and_insert((LogThreadedDestWorker *) dw, message);
 
