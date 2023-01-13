@@ -53,11 +53,10 @@ app_free(AppInfo *app);
  * From here on, *EVERYTHING* is officially fuzzing `syslogformat`
  */
 LogMessage *
-syslog_message_new(AppInfo *app, const uint8_t *data, size_t size);
+syslog_message_new(AppInfo *app, const uint8_t *data, size_t size, int *success);
 
 /**
  * If you used a LogMessage allocated with syslog_message_new, use this function to free it.
- * @param message
  */
 void
 syslog_message_free(LogMessage *message);
@@ -65,8 +64,6 @@ syslog_message_free(LogMessage *message);
 /**
  * Processes given message with the destination worker.
  * Performs a single connect-insert-disconnect cycle.
- * @param destination_worker
- * @param message
  */
 void
 destination_worker_connect_and_insert(LogThreadedDestWorker *destination_worker, LogMessage *message);

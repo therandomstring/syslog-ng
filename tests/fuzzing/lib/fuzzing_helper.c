@@ -26,13 +26,12 @@
 #include "apphook.h"
 #include "../../../modules/syslogformat/syslog-format.h"
 
+//FIXME: can't load module due to module path being unset
 void
 _app_load_extra_module_method(AppInfo *app, const char *module){
   cfg_load_module(app->config, module);
 }
 
-//DONE: secret storage init fails in app_startup()
-//FIXME: app_shutdown() g_list_free() fails on subsequent runs
 void
 _app_init(AppInfo *app)
 {
@@ -67,10 +66,11 @@ app_free(AppInfo *app)
 }
 
 LogMessage *
-syslog_message_new(AppInfo *app, const uint8_t *data, size_t size)
+syslog_message_new(AppInfo *app, const uint8_t *data, size_t size, int *success)
 {
   LogMessage *message = log_msg_new_empty();
-  syslog_format_handler(&app->parse_options, message, data, size, NULL);
+  gsize problem_index;
+  *success = syslog_format_handler(&app->parse_options, message, data, size, &problem_index);
   return message;
 }
 
