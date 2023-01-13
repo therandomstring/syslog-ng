@@ -12,6 +12,7 @@
    4. [Building targets with automake](#building-with-automake)
    5. [Fuzzing without a build system](#running-fuzz-tests-without-a-build-system)
    6. [Experimental features](#experimental-features)
+4. [Helper libraries](#helper-libraries)
 
 
 ## What is fuzzing
@@ -137,6 +138,7 @@ The only required argument is `TARGET`. If you do not provide other arguments, t
 |------------------|:------:|:-------------------------------------:|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | TARGET           | SINGLE |             **required**              | The name of your testcase. CTest will apply a "fuzz_" prefix to it.                                                                                                                                               |
 | EXPERIMENTAL     | OPTION |                  off                  | Enables some [features](#experimental-features) not supported by default. Might result in better performance or more useful results.                                                                              |
+| MEMORY_FUNCTIONS | OPTION |                  off                  | syslog-ng has not been written with fuzzing in mind. This leads to certain memory allocation problems when fuzzing. Switch on this option to use our library designed to prevent this very problem.               |
 | CORPUS_DIR       | SINGLE |                corpora                | Defines the directory in which the test input examples are located.                                                                                                                                               |
 | TIMEOUT          | SINGLE |                1500 s                 | Defines the CTest timeout. For technical reasons LibFuzzer stops 10 seconds before this deadline to allow proper shutdown. Take care to set a long enough deadline to account for a possible testcase to timeout. |
 | TESTCASE_TIMEOUT | SINGLE |                 60 s                  | Sets the timeout for a given testcase. Should be set based on the test, but the 60 seconds by default is a good blanket value.                                                                                    |
@@ -183,8 +185,26 @@ The experimental features are the following:
 * `UBSAN` (sanitize undefined behaviour)
 * `MSAN` (memory sanitizing) instead of `ASAN` (address sanitizing)
 
+## Helper libraries
+
+To ease writing tests, some helper libraries are provided in the `lib` folder.</br>
+Please do note, that these libraries are not pre-compiled, however build targets are defined for them.
+
+### `fuzzing_helpers`
+
+Sometimes writing testcases for syslog-ng requires knowledge of not just the module being tested, but the inner workings of syslog-ng itself. To ease writing tests, a helper library is provided.</br>
+You can get to know more about this by reading the [associated header file](lib/fuzzing_helper.h).
+
+### `fuzzing_intercept_memory_functions`
+
+syslog-ng has not been designed with fuzzing in mind. This means some memory management issues might appear during fuzzing, which might halt the fuzzing engine.</br>
+To prevent the issue from happening, please preload the `fuzzing_intercept_memory_functions` library provided in the syslog-ng repository.
+
 ## TODO
 
  * Implement rerun failed mode (--rerun-failed --output-on-failure)
  * -use_value_profile in experimental mode (also add to the paragraph)
  * add -reload=0 to experimental features
+ * remove -detect-leaks from default mode
+ * Switch on memory function interception by default
+ * Add all CMake features to the automake/shell version
