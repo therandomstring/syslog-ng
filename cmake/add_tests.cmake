@@ -86,7 +86,7 @@ Also, fuzzing need not be done as often as unit testing.\
     ")
   endif()
 
-  cmake_parse_arguments(ADD_FUZZ_TEST "EXPERIMENTAL" "TARGET;CORPUS_DIR;TIMEOUT;TESTCASE_TIMEOUT" "SRC;LIBS;EXEC_PARMS" ${ARGN})
+  cmake_parse_arguments(ADD_FUZZ_TEST "EXPERIMENTAL;MEMORY_FUNCTIONS" "TARGET;CORPUS_DIR;TIMEOUT;TESTCASE_TIMEOUT" "SRC;LIBS;EXEC_PARMS" ${ARGN})
 
   if(NOT ADD_FUZZ_TEST_SRC)
     message(NOTICE "No source file was provided for fuzzing target ${ADD_FUZZ_TEST_TARGET}. Trying targets/${ADD_FUZZ_TEST_TARGET}.c")
@@ -130,4 +130,7 @@ Also, fuzzing need not be done as often as unit testing.\
 
   add_test(fuzz_${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_TARGET} -max_total_time=${ADD_FUZZ_TEST_FUZZER_TOTAL_TIMEOUT} -timeout=${ADD_FUZZ_TEST_TESTCASE_TIMEOUT} ${ADD_FUZZ_TEST_EXEC_PARMS} ${ADD_FUZZ_TEST_CORPUS_DIR} )
   set_tests_properties(fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTIES TIMEOUT ${ADD_FUZZ_TEST_TIMEOUT})
+  if (ADD_FUZZ_TEST_MEMORY_FUNCTIONS)
+    set_tests_properties(fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTIES ENVIRONMENT  LD_PRELOAD=../../lib/libfuzzing_intercept_malloc.so)
+  endif ()
 endfunction()
