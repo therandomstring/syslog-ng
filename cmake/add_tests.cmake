@@ -128,6 +128,6 @@ Also, fuzzing need not be done as often as unit testing.\
     set_target_properties(${ADD_FUZZ_TEST_TARGET} PROPERTIES LINK_FLAGS "-o1 -fsanitize=\"fuzzer,memory,signed-integer-overflow,null,alignment\" -fno-omit-frame-pointer")
   endif()
 
-  add_test(fuzz_${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_TARGET} -max_total_time=${ADD_FUZZ_TEST_FUZZER_TOTAL_TIMEOUT} -timeout=${ADD_FUZZ_TEST_TESTCASE_TIMEOUT} ${ADD_FUZZ_TEST_EXEC_PARM} ${ADD_FUZZ_TEST_CORPUS_DIR} )
+  add_test(fuzz_${ADD_FUZZ_TEST_TARGET} ${ADD_FUZZ_TEST_TARGET} -max_total_time=${ADD_FUZZ_TEST_FUZZER_TOTAL_TIMEOUT} -timeout=${ADD_FUZZ_TEST_TESTCASE_TIMEOUT} ${ADD_FUZZ_TEST_EXEC_PARMS} ${ADD_FUZZ_TEST_CORPUS_DIR} )
   set_tests_properties(fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTIES TIMEOUT ${ADD_FUZZ_TEST_TIMEOUT})
 endfunction()
