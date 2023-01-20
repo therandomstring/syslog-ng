@@ -23,6 +23,7 @@
 #include <malloc.h>
 #include <iv.h>
 #include "fuzzing_helper.h"
+#include "fuzzing_malloc.h"
 #include "apphook.h"
 #include "../../../modules/syslogformat/syslog-format.h"
 
@@ -86,4 +87,25 @@ destination_worker_connect_and_insert(LogThreadedDestWorker *destination_worker,
   log_threaded_dest_worker_connect((LogThreadedDestWorker *) destination_worker);
   log_threaded_dest_worker_insert((LogThreadedDestWorker *) destination_worker, message);
   log_threaded_dest_worker_disconnect((LogThreadedDestWorker *) destination_worker);
+}
+
+int
+test_init(gint8 initialize_memory_functions)
+{
+  int malloc_register_success = register_memory_function_hooks(initialize_memory_functions);
+  switch (malloc_register_success)
+  {
+    case -1:
+      printf("WARNING: registering memory management functions wit sanitizer failed.\n");
+      break;
+    case 0:
+      printf("Memory management hook functions registered successfully.\n");
+      break;
+    case 1:
+      printf("WARNING: registering memory management functions wit sanitizer impossible. No sanitizer found");
+      break;
+    default:
+      g_assert_not_reached();
+  }
+  return -1;
 }

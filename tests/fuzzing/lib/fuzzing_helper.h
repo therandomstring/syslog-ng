@@ -26,6 +26,10 @@
 #include "cfg.h"
 #include "msg-format.h"
 #include "logthrdest/logthrdestdrv.h"
+#include "fuzzing_malloc.h"
+
+int
+test_init(gint8 initialize_memory_functions);
 
 typedef struct AppInfo AppInfo;
 struct AppInfo
