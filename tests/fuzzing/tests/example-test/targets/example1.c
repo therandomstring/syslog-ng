@@ -24,7 +24,14 @@
 #include "examples/destinations/example_destination/example_destination_worker.h"
 #include "fuzzing_helper.h"
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
+#ifndef SYSLOG_NG_FUZZING_MALLOC
+#define SYSLOG_NG_FUZZING_MALLOC 0
+#endif
+
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
+  test_init(SYSLOG_NG_FUZZING_MALLOC);
+
   if (size <= 1) return 0;
 
   AppInfo *app = app_new();
