@@ -183,7 +183,6 @@ The experimental features are the following:
 * `-print_final_stats`
 * `-detect-leaks`
 * `UBSAN` (sanitize undefined behaviour)
-* `MSAN` (memory sanitizing) instead of `ASAN` (address sanitizing)
 
 ## Helper libraries
 
