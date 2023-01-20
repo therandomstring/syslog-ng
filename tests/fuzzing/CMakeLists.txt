@@ -4,11 +4,10 @@ if(NOT ENABLE_FUZZING)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
-    message(WARNING "Apple Clang currently not supported")
-    return()
+    message(WARNING "fuzzer: Apple Clang support is experimental. Expect failures and undocumented behaviour.")
 endif()
 
-if(NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
+if(NOT (CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang"))
     message(WARNING "This function is only available when compiling with Clang. Please make sure you are indeed using Clang if you want to fuzz syslog-ng.")
     return()
 endif()
