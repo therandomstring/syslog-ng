@@ -20,6 +20,7 @@
  *
  */
 
+#include <stdatomic.h>
 #include "fuzzing_malloc.h"
 
 extern void
@@ -61,17 +62,26 @@ free(void *ptr)
   _fuzzer_free(ptr);
 }
 
-int
+volatile atomic_flag memory_hook_init;
+
+MemoryHookRegisterSuccess
 register_memory_function_hooks(__int8_t replace_memory_functions)
 {
   if(replace_memory_functions != 0)
     {
-      int hooks = __sanitizer_install_malloc_and_free_hooks((void (*)(volatile const void *, size_t)) _fuzzer_malloc,
-                                                            (void (*)(volatile const void *)) _fuzzer_free);
-      if(hooks == 0)
-        return -1;
+      if(atomic_flag_test_and_set(&memory_hook_init) == 0)
+        {
+          int hooks = __sanitizer_install_malloc_and_free_hooks((void (*)(volatile const void *, size_t)) _fuzzer_malloc,
+                                                                (void (*)(volatile const void *)) _fuzzer_free);
+          if(hooks == 0)
+            return -1;
+          else
+            return 0;
+        }
       else
-        return 0;
+        {
+          return 2;
+        }
     }
   return 1;
 }

@@ -157,6 +157,6 @@ Also, fuzzing need not be done as often as unit testing.\
   if (ADD_FUZZ_TEST_MEMORY_FUNCTIONS)
     message(NOTICE "Building fuzz target with non-standard memory management functions.")
     set_tests_properties(fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTIES ENVIRONMENT "LD_PRELOAD=${PROJECT_BINARY_DIR}/tests/fuzzing/lib/libfuzzing_intercept_memory_functions.so")
-    set_property(TEST fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTY ENVIRONMENT "ASAN_OPTIONS=allocator_may_return_null=1")
+    set_property(TEST fuzz_${ADD_FUZZ_TEST_TARGET} PROPERTY ENVIRONMENT "ASAN_OPTIONS=allocator_may_return_null=1:suppressions=${PROJECT_SOURCE_DIR}/tests/fuzzing/lib/ASAN.supp")
   endif ()
 endfunction()

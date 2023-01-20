@@ -95,14 +95,16 @@ test_init(gint8 initialize_memory_functions)
   int malloc_register_success = register_memory_function_hooks(initialize_memory_functions);
   switch (malloc_register_success)
   {
-    case -1:
+    case GENERAL_FATAL_FAILURE:
       printf("WARNING: registering memory management functions wit sanitizer failed.\n");
       break;
-    case 0:
+    case SUCCESS:
       printf("Memory management hook functions registered successfully.\n");
       break;
-    case 1:
+    case NO_SANITIZER:
       printf("WARNING: registering memory management functions wit sanitizer impossible. No sanitizer found");
+      break;
+    case REDUNDANT_ATTEMPT:
       break;
     default:
       g_assert_not_reached();

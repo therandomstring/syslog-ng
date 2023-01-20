@@ -25,7 +25,15 @@
 
 #include <malloc.h>
 
-int
+typedef enum MemoryHookRegisterSuccess
+{
+  SUCCESS = 0,
+  GENERAL_FATAL_FAILURE = -1,
+  NO_SANITIZER = 1,
+  REDUNDANT_ATTEMPT = 2
+} MemoryHookRegisterSuccess;
+
+MemoryHookRegisterSuccess
 register_memory_function_hooks(__int8_t replace_memory_functions);
 
 #endif //SYSLOG_NG_FUZZING_MALLOC_H
