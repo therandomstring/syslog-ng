@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 One Identity LLC
+ * Copyright (c) 2023 One Identity LLC.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 as published
@@ -22,14 +22,12 @@
 
 #include <criterion/criterion.h>
 #include <criterion/redirect.h>
-#include <criterion/parameterized.h>
-#include <stdint-gcc.h>
 #include "compression.h"
 
 char *test_message =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-uint8_t test_message_deflated_bytes[] =
+guint8 test_message_deflated_bytes[] =
 {
   0x78, 0x9c, 0x35, 0x90, 0xc1, 0x71, 0x43, 0x31, 0x08, 0x44, 0x5b, 0xd9, 0x02,
   0x3c, 0xbf, 0x8a, 0xe4, 0x96, 0x6b, 0x0a, 0x20, 0x88, 0xef, 0x30, 0x23, 0x09,
@@ -54,9 +52,9 @@ uint8_t test_message_deflated_bytes[] =
   0xfd, 0x71, 0x8d, 0x76, 0xfc, 0x00, 0xa0, 0x5c, 0xa5, 0x09
 };
 
-uint test_message_deflated_length = 270;
+guint test_message_deflated_length = 270;
 
-uint8_t test_message_gzipped_bytes[] =
+guint8 test_message_gzipped_bytes[] =
 {
   0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x35, 0x90, 0xc1,
   0x71, 0x43, 0x31, 0x08, 0x44, 0x5b, 0xd9, 0x02, 0x3c, 0xbf, 0x8a, 0xe4, 0x96,
@@ -82,7 +80,7 @@ uint8_t test_message_gzipped_bytes[] =
   0x00, 0xbd, 0xc5, 0xb2, 0x98, 0xbd, 0x01, 0x00, 0x00
 };
 
-uint test_message_gzipped_length = 282;
+guint test_message_gzipped_length = 282;
 
 // Needed because Criterion cr_assert_str_eq does not like random non-terminating \0s in a string.
 static inline void
