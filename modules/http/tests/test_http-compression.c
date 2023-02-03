@@ -39,7 +39,7 @@ HTTPDestinationWorker *worker;
 LogMessage *message;
 
 static void
-_init_worker(gchar* compression_type)
+_init_worker(gchar *compression_type)
 {
   http_dd_set_message_compression((LogDriver *) driver, compression_type);
   worker = (HTTPDestinationWorker *) driver->super.workers[0];
@@ -92,7 +92,7 @@ _init_test_message(void)
 }
 
 static void
-_check_driver_header_contains(const char* field)
+_check_driver_header_contains(const char *field)
 {
   GList *header = driver->headers;
   gboolean result = false;

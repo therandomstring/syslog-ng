@@ -5,7 +5,8 @@ modules_http_tests_TESTS			= \
 	modules/http/tests/test_http-loadbalancer	\
 	modules/http/tests/test_http-response_handlers	\
 	modules/http/tests/test_http-signal_slot	\
-	modules/http/tests/test_compression
+	modules/http/tests/test_compression	\
+	modules/http/tests/test_http-compression
 
 check_PROGRAMS					+= ${modules_http_tests_TESTS}
 
@@ -45,6 +46,18 @@ modules_http_tests_test_compression_CFLAGS	= $(TEST_CFLAGS) -I$(top_srcdir)/modu
 modules_http_tests_test_compression_LDADD = $(TEST_LDADD)
 modules_http_tests_test_compression_LDFLAGS	= \
 	-dlpreopen $(top_builddir)/modules/http/libhttp.la
+
+modules_http_tests_test_http_compression_DEPENDENCIES = \
+	$(top_builddir)/modules/http/libhttp.la
+modules_http_tests_test_http_compression_CFLAGS	= $(TEST_CFLAGS) \
+	-I$(top_srcdir)/modules/http \
+	-I$(top_srcdir)/modules/syslogformat
+modules_http_tests_test_http_compression_LDADD = $(TEST_LDADD) \
+	-dlpreopen $(top_builddir)/modules/http/libhttp.la \
+	 ${PREOPEN_SYSLOGFORMAT}
+modules_http_tests_test_http_compression_LDFLAGS	= \
+	-dlpreopen $(top_builddir)/modules/http/libhttp.la \
+	 ${PREOPEN_SYSLOGFORMAT}
 endif
 
 EXTRA_DIST += modules/http/tests/CMakeLists.txt
