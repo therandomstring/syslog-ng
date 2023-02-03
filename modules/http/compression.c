@@ -221,7 +221,7 @@ _CompressionUnifiedErrorCode _deflate_type_compression(GString *compressed, cons
   gint err;
 
   err = _z_stream_init(&_compress_stream, compressed, message);
-  if (err != _COMPRESSION_OK)
+  if (err != Z_OK)
     return _error_code_swap_zlib(err);
 
   gint _wbits = _set_deflate_type_wbit(deflate_algorithm_type);
