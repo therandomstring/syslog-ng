@@ -165,6 +165,14 @@ setup_vars() {
 			# 601/tcp and 601/udp are allowed by default on RHEL8, so there is no need to enable them
 			omit_allowed_ports
 			;;
+    9.*)
+			EL_FC="syslog_ng.el78.fc.in"
+			# TODO: make this file
+			EL_TE="syslog_ng.el9.te.in"
+
+			# 601/tcp and 601/udp are allowed by default on RHEL9, so there is no need to enable them
+			omit_allowed_ports
+			;;
 		*)
 			echo "You don't seem to be running a supported version of RHEL!" >&2
 			exit 250
