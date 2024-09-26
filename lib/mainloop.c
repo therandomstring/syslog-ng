@@ -689,6 +689,10 @@ main_loop_read_and_init_config(MainLoop *self)
 
   _init_reload_metrics(self);
 
+  main_loop_register_control_commands(self);
+  stats_register_control_commands();
+  healthcheck_register_control_commands();
+
   if (!cfg_read_config(self->current_configuration, resolved_configurable_paths.cfgfilename, options->preprocess_into))
     {
       return 1;
@@ -720,9 +724,6 @@ main_loop_read_and_init_config(MainLoop *self)
   cfg_monitor_add_watch(self->cfg_monitor, _cfg_file_modified, self);
   cfg_monitor_start(self->cfg_monitor);
 
-  main_loop_register_control_commands(self);
-  stats_register_control_commands();
-  healthcheck_register_control_commands();
   return 0;
 }
 
