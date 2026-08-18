@@ -88,6 +88,9 @@ struct _ModuleInfo
   Plugin *plugins;
   gint plugins_len;
   /* the higher the better */
+  /* if TRUE, the module is kept resident (g_module_make_resident()) and
+   * never actually unmapped across reloads */
+  gboolean requires_residency;
 };
 
 struct _PluginContext
